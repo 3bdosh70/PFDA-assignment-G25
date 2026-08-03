@@ -47,3 +47,11 @@ po/*~
 
 # RStudio Connect folder
 rsconnect/
+
+# Operating system files
+.DS_Store
+Thumbs.db
+
+# Temporary document files
+*.aux
+*.log

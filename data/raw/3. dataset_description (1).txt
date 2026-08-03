@@ -1,0 +1,81 @@
+DATASET DESCRIPTION: spotify_tracks_data.csv
+
+Column: track_id
+  Data type   : string
+  Description : Spotify unique identifier for the track
+
+Column: artists
+  Data type   : string
+  Description : Artist name(s); multiple artists separated by semicolon
+
+Column: album_name
+  Data type   : string
+  Description : Name of the album the track appears on
+
+Column: track_name
+  Data type   : string
+  Description : Name of the track
+
+Column: popularity
+  Data type   : integer
+  Description : Spotify popularity score of the track
+
+Column: duration_ms
+  Data type   : integer
+  Description : Track length in milliseconds
+
+Column: explicit
+  Data type   : boolean
+  Description : Whether the track has explicit lyrics
+
+Column: danceability
+  Data type   : float
+  Description : How suitable a track is for dancing, based on tempo, rhythm stability, beat strength, and regularity
+
+Column: energy
+  Data type   : float
+  Description : Perceptual measure of intensity and activity
+
+Column: key
+  Data type   : integer
+  Description : Estimated overall musical key, using standard pitch class notation (0=C, 1=C#/Db, etc.)
+
+Column: loudness
+  Data type   : float
+  Description : Overall loudness of the track in decibels (dB)
+
+Column: mode
+  Data type   : integer
+  Description : Modality of the track (1=major, 0=minor)
+
+Column: speechiness
+  Data type   : float
+  Description : Presence of spoken words in the track (higher values indicate more speech-like content)
+
+Column: acousticness
+  Data type   : float
+  Description : Confidence measure of whether the track is acoustic
+
+Column: instrumentalness
+  Data type   : float
+  Description : Predicts whether a track contains no vocals (higher values indicate more instrumental content)
+
+Column: liveness
+  Data type   : float
+  Description : Detects the presence of a live audience in the recording
+
+Column: valence
+  Data type   : float
+  Description : Musical positiveness conveyed by the track (higher values sound more cheerful/euphoric)
+
+Column: tempo
+  Data type   : float
+  Description : Estimated overall tempo of the track in beats per minute (BPM)
+
+Column: time_signature
+  Data type   : integer
+  Description : Estimated time signature (number of beats per bar)
+
+Column: track_genre
+  Data type   : string
+  Description : Genre category assigned to the track
