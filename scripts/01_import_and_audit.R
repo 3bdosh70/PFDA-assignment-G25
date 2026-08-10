@@ -90,19 +90,19 @@ sum(duplicated(duplicate_test))
 #total of duuplicates excluding "X" column
 
 duplicate_test[duplicated(duplicate_test), ]
-View(duplicate_test[duplicated(duplicate_test), ])
+#View(duplicate_test[duplicated(duplicate_test), ])
 
 ####################
 duplicate_rows = duplicate_test[duplicated(duplicate_test), ]
-View(head(duplicate_rows))
-View(duplicate_rows)
+#View(head(duplicate_rows))
+#View(duplicate_rows)
 
 ###################
 all_duplicate_rows = duplicate_test[
   duplicated(duplicate_test) |
     duplicated(duplicate_test, fromLast = TRUE), ]
 
-View(head((all_duplicate_rows)))
+#View(head((all_duplicate_rows)))
 #-----------------------------------------------------
 #Finding repeated track IDs
 
@@ -122,7 +122,7 @@ repeated_track_rows =
 nrow(repeated_track_rows)
 #Count all rows belonging to repeated IDs
 
-View(repeated_track_ids)
+#View(repeated_track_ids)
 #Display the record count for each repeated ID
 
 id_genre = unique(
@@ -134,12 +134,12 @@ id_genre = unique(
 #This prevents meaningful genre records from being treated as exact duplicates.
 
 genre_counts = table(id_genre$track_id)
-View(genre_counts)
+#View(genre_counts)
 
 multiple_genre_ids = genre_counts[genre_counts > 1]
 
 multiple_genre_ids
-View(multiple_genre_ids)
+#View(multiple_genre_ids)
 
 #-----------------------------------------------------
 #Repeated track IDs are checked to determine whether the same track 
@@ -154,7 +154,7 @@ different_popularity_ids =
   popularity_counts[popularity_counts > 1]
 
 different_popularity_ids
-View(different_popularity_ids)
+#View(different_popularity_ids)
 
 #-----------------------------------------------------
 # Repeated track IDs are checked to determine whether the same track has
@@ -173,4 +173,200 @@ audio_counts = table(id_audio$track_id)
 different_audio_ids = audio_counts[audio_counts > 1]
 
 different_audio_ids
-View(different_audio_ids)
+#View(different_audio_ids)
+#-----------------------------------------------------
+
+exact_duplicate_flag =
+  duplicated(duplicate_test) |
+  duplicated(duplicate_test, fromLast = TRUE)
+# Exact duplicates have identical values across all compared columns.
+
+
+repeated_id_flag =
+  duplicate_test$track_id %in% names(repeated_track_ids)
+# Identify all rows with repeated track IDs
+
+
+exact_duplicate_records =
+  duplicate_test[exact_duplicate_flag, ]
+# Exact duplicated records
+
+
+repeated_nonduplicate_records =
+  duplicate_test[repeated_id_flag & !exact_duplicate_flag, ]
+
+# Repeated-ID records that are not exact duplicates
+
+nrow(exact_duplicate_records)
+#We found 786 exact duplicate record 
+nrow(repeated_nonduplicate_records)
+# we found 40114 exact non-duplicate record
+
+#View(exact_duplicate_records)
+#View(repeated_nonduplicate_records)
+#-----------------------------------------------------
+#Categorical Values
+
+unique(raw_data$explicit)
+#Whether the track has explicit lyrics
+
+unique(raw_data$key)
+#Estimated overall musical key, using standard pitch class notation (0=C, 1=C#/Db, etc.)
+#Key contains −5, 12, 15, 20, and 30, which are potentially unsupported because they fall outside the documented range of 0 to 11.
+#unique(raw_data$mode)
+
+
+unique(raw_data$mode)
+#Modality of the track (1=major, 0=minor)
+#Mode contains −1, 2, and 5, which are potentially unsupported because only 0 (minor) and 1 (major) are documented.
+
+
+unique(raw_data$time_signature)
+#Estimated time signature (number of beats per bar)
+#Time signature contains −1, 0, 1, 9, 12, and 15, which are potentially unsupported because they fall outside the documented range of 3 to 7.
+
+
+sort(unique(raw_data$track_genre))
+#Genre category assigned to the track
+#Track genre contains several potential spelling and formatting inconsistencies, mainly caused by missing hyphens or spaces.
+#These variations may incorrectly separate the same intended genre into different categories
+#-----------------------------------------------------
+#frequency counts
+#Frequency counts show how often each categorical value occurs.
+
+table(raw_data$explicit)
+#Explicit is strongly concentrated in “False” with 104,069 records,
+#compared with 9,729 “True” records. The frequency table excludes 202 missing values.
+
+table(raw_data$key)
+##Key contains 38 potentially unsupported values outside the accepted range of 0–11: −5 appears 11 times,
+#12 appears 8 times, 15 appears 4 times, 20 appears 10 times, and 30 appears 5 times. The table excludes 203 missing values.
+
+
+table(raw_data$mode)
+##Mode is mainly represented by 1, with 72,532 records, followed by 0, with 41,248 records.
+#It also contains 31 unsupported values: −1 appears 9 times, 2 appears 14 times, and 5 appears 8 times.
+#The table excludes 189 missing values.
+
+
+table(raw_data$time_signature)
+##Time signature is strongly concentrated at 4, with 101,638 records.
+#Under the accepted range of 3–7, 1,173 values are potentially unsupported,
+#including −1, 0, 1, 9, 12, and 15. The table excludes 191 missing values.
+
+sort(table(raw_data$track_genre), decreasing = TRUE)
+##Genre frequencies are divided by potential spelling and punctuation variants.
+#For example, alt-rock has 750 records while altrock has 250.
+#These variants are recorded for later review and are not changed during Stage 1.
+#-----------------
+
+#Numerical Values-----------------
+
+#summary statistics
+summary(raw_data$popularity)
+summary(raw_data$duration_ms)
+
+continuous_audio = raw_data[c(
+  "danceability", "energy", "loudness", "speechiness",
+  "acousticness", "instrumentalness", "liveness",
+  "valence", "tempo"
+)]
+
+summary(continuous_audio)
+#----------------------------------------------------
+#minimum and maximum values
+sapply(continuous_audio, min, na.rm = TRUE)
+sapply(continuous_audio, max, na.rm = TRUE)
+
+#------------------------------------------------
+#Popularity outside 0–100
+sum(
+  !is.na(raw_data$popularity) &
+    (raw_data$popularity < 0 | raw_data$popularity > 100)
+)
+
+#-----------------------------------------------
+
+sum(!is.na(raw_data$popularity) & raw_data$popularity < 0)
+sum(!is.na(raw_data$popularity) & raw_data$popularity > 100)
+
+# A total of 75 popularity values fall outside 0–100:
+# 24 are below 0 and 51 are above 100. These values are potentially
+# invalid because popularity is expected to remain within 0–100.
+
+
+# -------------------------------------------------------------
+# 6. Negative or zero duration values
+# -------------------------------------------------------------
+
+sum(
+  !is.na(raw_data$duration_ms) &
+    raw_data$duration_ms <= 0
+)
+
+sum(!is.na(raw_data$duration_ms) & raw_data$duration_ms < 0)
+sum(!is.na(raw_data$duration_ms) & raw_data$duration_ms == 0)
+
+# There are 51 non-positive duration values: 38 are negative and
+# 13 are zero. They are potentially invalid because a track must
+# have a positive duration.
+
+
+# -------------------------------------------------------------
+# 7. Audio-score values outside the expected range of 0–1
+# -------------------------------------------------------------
+
+audio_scores = raw_data[c(
+  "danceability", "energy", "speechiness", "acousticness",
+  "instrumentalness", "liveness", "valence"
+)]
+
+sapply(
+  audio_scores,
+  function(x) sum(!is.na(x) & (x < 0 | x > 1))
+)
+
+# Danceability, energy, speechiness, acousticness, instrumentalness,
+# liveness and valence each contain 31 values outside 0–1.
+# These values are potentially invalid because these audio scores
+# are expected to remain between 0 and 1.
+
+
+# -------------------------------------------------------------
+# 8. Non-positive tempo values
+# -------------------------------------------------------------
+
+sum(
+  !is.na(raw_data$tempo) &
+    raw_data$tempo <= 0
+)
+
+sum(!is.na(raw_data$tempo) & raw_data$tempo < 0)
+sum(!is.na(raw_data$tempo) & raw_data$tempo == 0)
+
+# Tempo contains 194 non-positive values: 37 are negative and
+# 157 are zero. They are potentially invalid because tempo is
+# expected to be greater than zero beats per minute.
+
+
+# -------------------------------------------------------------
+# 9. Potentially suspicious loudness values
+# -------------------------------------------------------------
+
+summary(raw_data$loudness)
+
+sum(
+  !is.na(raw_data$loudness) &
+    (raw_data$loudness < -60 | raw_data$loudness > 0)
+)
+
+sum(!is.na(raw_data$loudness) & raw_data$loudness < -60)
+sum(!is.na(raw_data$loudness) & raw_data$loudness > 0)
+
+# Using the typical reference range of -60 to 0 dB, 140 loudness
+# values are potentially suspicious: 24 are below -60 and 116 are
+# above 0. They are not confirmed invalid until the accepted range
+# is verified against the dataset documentation.
+
+
+
