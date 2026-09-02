@@ -17,7 +17,11 @@
 #import and test the dataset
 #compare the names and data types of the columns
 getwd()
-raw_data = read.csv("data/raw/spotify_tracks_data.csv")
+raw_data = read.csv(
+  "data/raw/spotify_tracks_data.csv",
+  na.strings = c("", "NA", "N/A", "NULL")
+)
+#we sort all missing values as null for the program so it's all identifed under the same concept
 head(raw_data)
 #dataset was imported successfully and tested to be matching the actual csv file comparing with the first 6 rows
 
@@ -31,11 +35,15 @@ names(raw_data)
 #"track_genre"
 ncol(raw_data)
 nrow(raw_data)
-#the columns appear to be 21, 20 appears to be matching the columns names provided by the file "dataset_description.txt" while column "X" is additional.
+# The dataset contains 114,000 rows and 21 columns.
+# Twenty columns correspond to the supplied dataset description.
+# X is an additional index-like column and will be investigated
+# before any cleaning decision is made.
 
 str(raw_data)
-#we have compared the columns data types with the file "dataset_description.txt" and found the bloew columns data types to be in a wrong format
-#explicit - danceability - energy - loudness - speechiness - acousticness - instrumentalness - liveness - valence - tempo
+#we have compared the columns data types with the file "dataset_description.txt"
+#the decimal audio features are represented as numeric in R, which is appropriate for the documented float variables
+#any required structural conversions will be handled in Stage 02a
 
 #-----------------------------------------------------
 
@@ -44,22 +52,21 @@ str(raw_data)
 colSums(is.na(raw_data))
 sort(colSums(is.na(raw_data)), decreasing = TRUE)
 sum(is.na(raw_data))
-#View(colSums(is.na(raw_data)))
-
-raw_data = read.csv(
-  "data/raw/spotify_tracks_data.csv",
-  na.strings = c("", "NA", "N/A", "NULL")
-)
-#we sort all missing values is null for the program so it's all identifed under the same concept
+View(colSums(is.na(raw_data)))
 
 (colSums(is.na(raw_data)) / nrow(raw_data)) * 100
 # Missing percentage for every column
 
 sum(rowSums(is.na(raw_data)) > 0)
 # Number of rows containing at least one missing value
-# The dataset contains 2,758 missing values across 14 columns.
+# The dataset contains 3,553 missing values across 18 columns.
+# A total of 3,485 rows contain at least one missing value.
+# artists - 187
+# album_name - 220
+# track_name - 186
 # popularity - 193
 # duration_ms - 191
+# explicit - 202
 # danceability - 190
 # energy - 192
 # key - 203
@@ -72,10 +79,11 @@ sum(rowSums(is.na(raw_data)) > 0)
 # valence - 202
 # tempo - 220
 # time_signature - 191
+# No missing values are changed during the audit stage.
 
 #-----------------------------------------------------
 
-#Finding the duplicated columns
+#Finding the duplicated rows
 
 sum(duplicated(raw_data))
 # The result is 0 because the X column contains a unique index for every row.
@@ -87,22 +95,23 @@ duplicate_test$X = NULL
 # without changing the raw data, as X may hide exact duplicates.
 
 sum(duplicated(duplicate_test))
-#total of duuplicates excluding "X" column
+#total of duplicates excluding "X" column
+#There are 396 redundant duplicate occurrences.
 
 duplicate_test[duplicated(duplicate_test), ]
-#View(duplicate_test[duplicated(duplicate_test), ])
+View(duplicate_test[duplicated(duplicate_test), ])
 
 ####################
 duplicate_rows = duplicate_test[duplicated(duplicate_test), ]
-#View(head(duplicate_rows))
-#View(duplicate_rows)
+View(head(duplicate_rows))
+View(duplicate_rows)
 
 ###################
 all_duplicate_rows = duplicate_test[
   duplicated(duplicate_test) |
     duplicated(duplicate_test, fromLast = TRUE), ]
 
-#View(head((all_duplicate_rows)))
+View(head((all_duplicate_rows)))
 #-----------------------------------------------------
 #Finding repeated track IDs
 
@@ -112,7 +121,7 @@ length(unique(raw_data$track_id))
 track_id_number = table(raw_data$track_id)
 repeated_track_ids = track_id_number[track_id_number > 1]
 repeated_track_ids
-#View(repeated_track_ids)
+View(repeated_track_ids)
 length(repeated_track_ids)
 #Identify repeated IDs
 
@@ -122,7 +131,7 @@ repeated_track_rows =
 nrow(repeated_track_rows)
 #Count all rows belonging to repeated IDs
 
-#View(repeated_track_ids)
+View(repeated_track_ids)
 #Display the record count for each repeated ID
 
 id_genre = unique(
@@ -134,12 +143,12 @@ id_genre = unique(
 #This prevents meaningful genre records from being treated as exact duplicates.
 
 genre_counts = table(id_genre$track_id)
-#View(genre_counts)
+View(genre_counts)
 
 multiple_genre_ids = genre_counts[genre_counts > 1]
 
 multiple_genre_ids
-#View(multiple_genre_ids)
+View(multiple_genre_ids)
 
 #-----------------------------------------------------
 #Repeated track IDs are checked to determine whether the same track 
@@ -154,7 +163,7 @@ different_popularity_ids =
   popularity_counts[popularity_counts > 1]
 
 different_popularity_ids
-#View(different_popularity_ids)
+View(different_popularity_ids)
 
 #-----------------------------------------------------
 # Repeated track IDs are checked to determine whether the same track has
@@ -173,7 +182,7 @@ audio_counts = table(id_audio$track_id)
 different_audio_ids = audio_counts[audio_counts > 1]
 
 different_audio_ids
-#View(different_audio_ids)
+View(different_audio_ids)
 #-----------------------------------------------------
 
 exact_duplicate_flag =
@@ -198,12 +207,13 @@ repeated_nonduplicate_records =
 # Repeated-ID records that are not exact duplicates
 
 nrow(exact_duplicate_records)
-#We found 786 exact duplicate record 
+#786 rows belong to exact duplicate groups.
+#These groups contain 396 redundant duplicate occurrences.
 nrow(repeated_nonduplicate_records)
-# we found 40114 exact non-duplicate record
+#40114 rows contain repeated track IDs but are not exact duplicates.
 
-#View(exact_duplicate_records)
-#View(repeated_nonduplicate_records)
+View(exact_duplicate_records)
+View(repeated_nonduplicate_records)
 #-----------------------------------------------------
 #Categorical Values
 
@@ -223,7 +233,8 @@ unique(raw_data$mode)
 
 unique(raw_data$time_signature)
 #Estimated time signature (number of beats per bar)
-#Time signature contains −1, 0, 1, 9, 12, and 15, which are potentially unsupported because they fall outside the documented range of 3 to 7.
+#Time signature contains unusual values including −1, 0, 1, 9, 12, and 15.
+#Their validity will be checked against an authoritative reference during Stage 02c before any values are changed.
 
 
 sort(unique(raw_data$track_genre))
@@ -251,7 +262,7 @@ table(raw_data$mode)
 
 table(raw_data$time_signature)
 ##Time signature is strongly concentrated at 4, with 101,638 records.
-#Under the accepted range of 3–7, 1,173 values are potentially unsupported,
+#It also contains 1,173 values among the unusual values identified for later verification,
 #including −1, 0, 1, 9, 12, and 15. The table excludes 191 missing values.
 
 sort(table(raw_data$track_genre), decreasing = TRUE)
@@ -290,9 +301,9 @@ sum(
 sum(!is.na(raw_data$popularity) & raw_data$popularity < 0)
 sum(!is.na(raw_data$popularity) & raw_data$popularity > 100)
 
-# A total of 75 popularity values fall outside 0–100:
-# 24 are below 0 and 51 are above 100. These values are potentially
-# invalid because popularity is expected to remain within 0–100.
+# A total of 75 popularity values fall outside the currently checked range of 0–100:
+# 24 are below 0 and 51 are above 100.
+# Their validity will be verified using an authoritative reference during Stage 02c.
 
 
 # -------------------------------------------------------------
@@ -327,9 +338,9 @@ sapply(
 )
 
 # Danceability, energy, speechiness, acousticness, instrumentalness,
-# liveness and valence each contain 31 values outside 0–1.
-# These values are potentially invalid because these audio scores
-# are expected to remain between 0 and 1.
+# liveness and valence each contain 31 values outside the currently checked range of 0–1.
+# These potential range violations will be verified before treatment
+# during Stage 02c.
 
 
 # -------------------------------------------------------------
@@ -345,8 +356,8 @@ sum(!is.na(raw_data$tempo) & raw_data$tempo < 0)
 sum(!is.na(raw_data$tempo) & raw_data$tempo == 0)
 
 # Tempo contains 194 non-positive values: 37 are negative and
-# 157 are zero. They are potentially invalid because tempo is
-# expected to be greater than zero beats per minute.
+# 157 are zero. These values are recorded for further validation
+# during Stage 02c before any treatment.
 
 
 # -------------------------------------------------------------
@@ -363,10 +374,37 @@ sum(
 sum(!is.na(raw_data$loudness) & raw_data$loudness < -60)
 sum(!is.na(raw_data$loudness) & raw_data$loudness > 0)
 
-# Using the typical reference range of -60 to 0 dB, 140 loudness
-# values are potentially suspicious: 24 are below -60 and 116 are
-# above 0. They are not confirmed invalid until the accepted range
-# is verified against the dataset documentation.
+# Using the current reference interval of -60 to 0 dB, 140 loudness
+# values are flagged for further investigation: 24 are below -60 and
+# 116 are above 0. These values are not treated as invalid during Stage 01
+# and will be verified during Stage 02c.
 
+#-----------------------------------------------------
+#Stage 01 Audit Summary
 
+cat("\n--- DATASET AUDIT SUMMARY ---\n")
+cat("Rows:", nrow(raw_data), "\n")
+cat("Columns:", ncol(raw_data), "\n")
+cat("Total missing cells:", sum(is.na(raw_data)), "\n")
+cat(
+  "Rows with missing values:",
+  sum(rowSums(is.na(raw_data)) > 0),
+  "\n"
+)
+cat(
+  "Duplicate occurrences excluding X:",
+  sum(duplicated(duplicate_test)),
+  "\n"
+)
+cat(
+  "Rows belonging to duplicate groups:",
+  sum(exact_duplicate_flag),
+  "\n"
+)
+cat(
+  "Repeated track IDs:",
+  length(repeated_track_ids),
+  "\n"
+)
 
+cat("\nStage 01 completed: no data were cleaned or removed.\n")
