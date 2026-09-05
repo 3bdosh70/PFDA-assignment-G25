@@ -1,128 +1,199 @@
-# ============================================================
-# PROGRAMMING FOR DATA ANALYSIS
-# GROUP 25
-# SONG POPULARITY PREDICTION
-# ============================================================
 
-# Script: 02a_structure_and_types.R
-# Responsible student:
-# Name:
-# TP Number:
 
-# Main responsibility:
-# Data structure, column checking and data-type correction.
-
-# Additional cleaning responsibility:
-# After all data-cleaning stages have been completed, the same
-# student will validate the final cleaned dataset to confirm
-# that the cleaning process was completed correctly.
-#
-# This validation is only for the data-cleaning section.
-# It does not include validating the complete assignment,
-# analysis objectives, models, report or other project files.
-#
-# The cleaned-data validation should be written at the end of:
-# scripts/02_data_cleaning.R
-#
-# It must run only after:
 # 02a_structure_and_types.R
-# 02b_duplicates_and_genres.R
-# 02c_value_validation.R
-# 02d_missing_values_and_export.R
-
-# Purpose:
-# To create a working copy of the original Spotify dataset,
-# inspect its structure, remove the unnecessary row-number
-# column, confirm that all required variables are available,
-# and convert variables into suitable R data types.
-#
-# This script handles only the structure and data-type stage.
-# Missing values, duplicated records, genre standardisation and
-# invalid numerical values are handled in later cleaning scripts.
-# ============================================================
 
 
-# Tasks for this script:
-# 1. Confirm that spotify_raw exists
-# 2. Create a working copy called spotify_clean
-# 3. Record the original number of rows and columns
-# 4. Identify and remove the unnecessary row-number column
-# 5. Confirm that all expected Spotify variables exist
-# 6. Standardise column names where necessary
-# 7. Inspect the original data type of every variable
-# 8. Convert variables into suitable R data types
-# 9. Confirm that popularity is the target variable
-# 10. Create a structure-and-types audit table
-# 11. Export the structure-and-types audit table
-# 12. Document all decisions, code and results
-# 13. Pass spotify_clean to the next cleaning stage
+#Create a working copy of the raw dataset
+clean_data = raw_data
 
 
-# Variables that should normally remain character:
-# track_id
-# artists
-# album_name
-# track_name
-# track_genre
+#-----------------------------------------------------
 
+#Check the starting structure of the dataset
 
-# Variables that should normally remain numeric:
-# popularity
-# duration_ms
-# danceability
-# energy
-# loudness
-# speechiness
-# acousticness
-# instrumentalness
-# liveness
-# valence
-# tempo
+nrow(clean_data)
+ncol(clean_data)
+names(clean_data)
+str(clean_data)
 
+#The dataset starts with 114000 rows and 21 columns
+#The additional X column was identified during Stage 01
 
-# Variables that should be reviewed as categorical:
-# explicit
-# key
-# mode
-# time_signature
+#-----------------------------------------------------
 
+#Check the X column before removing it
 
-# Planned output from this script:
-# outputs/tables/structure_and_types_audit.csv
+head(clean_data$X)
+tail(clean_data$X)
+length(unique(clean_data$X))
 
+#X contains a unique sequential value for every row and is not included
+#in the supplied dataset description, so it is treated as an index column
 
-# Documentation file:
-# report/cleaning_documentation/
-# member1_structure_types_and_cleaning_validation.md
+#-----------------------------------------------------
 
+#Remove the additional X index column
 
-# Cleaned-data validation tasks to complete later:
-# These checks must be performed only after every cleaning
-# script has finished.
+clean_data$X = NULL
 
-# 1. Confirm that the final cleaned dataset exists
-# 2. Record the final number of rows and columns
-# 3. Confirm that the unnecessary index column was removed
-# 4. Confirm that all required columns still exist
-# 5. Confirm that column data types are correct
-# 6. Confirm that missing popularity values were handled
-# 7. Confirm that exact duplicates were handled
-# 8. Confirm that invalid values were handled
-# 9. Confirm that genre labels were standardised
-# 10. Confirm that the cleaned dataset was exported successfully
-# 11. Compare the dataset before and after cleaning
-# 12. Create a cleaned-data validation results table
-# 13. Document any remaining issues or limitations
+nrow(clean_data)
+ncol(clean_data)
+names(clean_data)
 
+#X is removed because its an additional index column and does not
+#represent a Spotify track characteristic used in the analysis
+#The dataset now contains 114000 rows and the 20 documented columns
 
-# Planned cleaned-data validation output:
-# outputs/tables/cleaned_data_validation_results.csv
+#-----------------------------------------------------
 
+#Check the remaining column names against the dataset description
 
-# Important:
-# Do not handle missing values in this script.
-# Do not remove duplicated tracks in this script.
-# Do not standardise genre labels in this script.
-# Do not replace invalid values in this script.
-# Do not export the final cleaned dataset in this script.
-# Do not validate the entire assignment.
+expected_columns = c(
+  "track_id",
+  "artists",
+  "album_name",
+  "track_name",
+  "popularity",
+  "duration_ms",
+  "explicit",
+  "danceability",
+  "energy",
+  "key",
+  "loudness",
+  "mode",
+  "speechiness",
+  "acousticness",
+  "instrumentalness",
+  "liveness",
+  "valence",
+  "tempo",
+  "time_signature",
+  "track_genre"
+)
+
+names(clean_data)
+
+all(names(clean_data) == expected_columns)
+
+#TRUE confirms that the 20 remaining column names match
+#the columns in dataset_description.txt
+
+#-----------------------------------------------------
+
+#Check the current data types
+
+str(clean_data)
+
+#The character and numeric audio variables are already represented
+#using appropriate R data types
+#The variables documented as integer and boolean are checked below
+
+#-----------------------------------------------------
+
+#Check that variables documented as integers contain whole numbers
+
+sum(
+  !is.na(clean_data$popularity) &
+    clean_data$popularity %% 1 != 0
+)
+
+sum(
+  !is.na(clean_data$duration_ms) &
+    clean_data$duration_ms %% 1 != 0
+)
+
+sum(
+  !is.na(clean_data$key) &
+    clean_data$key %% 1 != 0
+)
+
+sum(
+  !is.na(clean_data$mode) &
+    clean_data$mode %% 1 != 0
+)
+
+sum(
+  !is.na(clean_data$time_signature) &
+    clean_data$time_signature %% 1 != 0
+)
+
+#key = -5
+#mode = 5
+#popularity = 999
+#All five variables contain no decimal values among their non-missing records
+#Their values are not validated in this stage because value validation
+#will be completed in Stage 02c
+
+#-----------------------------------------------------
+
+#Record the missing value count before changing data types
+
+missing_before_types = sum(is.na(clean_data))
+
+missing_before_types
+
+#There are 3553 missing values before the data type conversions
+
+#-----------------------------------------------------
+
+#Convert variables documented as integers
+
+clean_data$popularity = as.integer(clean_data$popularity)
+clean_data$duration_ms = as.integer(clean_data$duration_ms)
+clean_data$key = as.integer(clean_data$key)
+clean_data$mode = as.integer(clean_data$mode)
+clean_data$time_signature = as.integer(clean_data$time_signature)
+
+#The variables documented as integers are converted from numeric to integer
+#after confirming that their non-missing values contain no decimals
+
+#-----------------------------------------------------
+
+#Check the explicit variable before conversion
+
+unique(clean_data$explicit)
+
+#Explicit contains False, True and missing values
+#The dataset description identifies explicit as a boolean variable
+
+#Convert explicit from character to logical
+
+clean_data$explicit = clean_data$explicit == "True"
+
+unique(clean_data$explicit)
+
+#explicit is converted to logical and is now represented
+#as FALSE, TRUE and NA 
+
+#-----------------------------------------------------
+
+#Check whether data type conversions created new missing values
+
+missing_after_types = sum(is.na(clean_data))
+
+missing_before_types
+missing_after_types
+
+missing_after_types - missing_before_types
+
+#before = 3553
+#after  = 3553
+#difference = 0
+#The difference is 0, confirming that no additional missing values
+#were created during the data type conversions
+
+#-----------------------------------------------------
+
+#Check the final dataset structure and data types
+
+nrow(clean_data)
+ncol(clean_data)
+names(clean_data)
+str(clean_data)
+
+#The final structure contains 114000 rows and 20 columns
+#No rows were removed during Stage 02a
+#The column names and data types are now prepared for later cleaning stages
+
+#-----------------------------------------------------
+
