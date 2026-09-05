@@ -251,22 +251,3 @@ nrow(repeated_track_rows)
 
 #The remaining repeated track IDs are preserved because only
 #records that became completely identical were removed.
-
-#-----------------------------------------------------
-#Stage 02b Summary
-
-cat("\n--- DUPLICATE AND GENRE CLEANING SUMMARY ---\n")
-cat("Exact duplicates removed:", rows_removed, "\n")
-cat(
-  "Genre categories after standardization:",
-  length(unique(clean_data$track_genre)),
-  "\n"
-)
-cat(
-  "Duplicates removed after genre standardization:",
-  genre_duplicates_removed,
-  "\n"
-)
-cat("Final rows after Stage 02b:", nrow(clean_data), "\n")
-
-cat("\nStage 02b completed: duplicates and genre formatting cleaned.\n")
