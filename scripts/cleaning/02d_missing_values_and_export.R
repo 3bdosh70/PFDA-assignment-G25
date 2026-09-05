@@ -25,8 +25,7 @@ ncol(clean_data)
 colSums(is.na(clean_data))
 sum(is.na(clean_data))
 
-#The dataset is passed from Stage 02c
-#There are 113579 rows, 20 columns and 5170 missing values
+#There are 113579 rows, 20 columns and 5220 missing values
 #before handling the remaining missing values
 
 #-----------------------------------------------------
@@ -61,7 +60,7 @@ nrow(clean_data)
 colSums(is.na(clean_data))
 sum(is.na(clean_data))
 
-#After removing rows with missing popularity, 4886 missing values remain
+#After removing rows with missing popularity, 4936 missing values remain
 #in the predictor and descriptive variables
 
 #-----------------------------------------------------
