@@ -489,43 +489,6 @@ genre_counts =
 genre_counts
 
 length(genre_counts)
-
-
-# Top 10 genres by record count
-
-top_10_genres =
-  head(genre_counts, 10)
-
-top_10_genres
-
-
-top_10_genres_df = data.frame(
-  Genre = names(top_10_genres),
-  Count = as.numeric(top_10_genres)
-)
-
-
-top_10_genres_df
-
-
-ggplot(
-  top_10_genres_df,
-  aes(
-    x = reorder(Genre, Count),
-    y = Count
-  )
-) +
-  geom_col(
-    fill = "steelblue"
-  ) +
-  coord_flip() +
-  labs(
-    title = "Top 10 Genres by Number of Records",
-    x = "Genre",
-    y = "Number of Records"
-  )
-
-
 #-----------------------------------------------------
 # Basic popularity comparison by explicit status
 
