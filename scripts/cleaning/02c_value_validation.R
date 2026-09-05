@@ -9,140 +9,394 @@
 # Name:
 # TP Number:
 
-# Main responsibility:
-# Numerical and categorical value validation, invalid-value
-# treatment and outlier investigation.
-
 # Purpose:
-# To check whether the values stored in each Spotify variable
-# follow the approved valid ranges or categories, identify
-# impossible values, and replace confirmed invalid values with
-# NA so they can be handled in the missing-value stage.
-#
-# This script must distinguish between:
-#
-# 1. Invalid or impossible values
-# 2. Unusual but potentially valid outliers
-#
-# An unusual value must not be removed only because it is far
-# from the average. A value should be treated as invalid only
-# when it breaks an approved logical or documented rule.
-#
-# This script runs after:
-# scripts/cleaning/02b_duplicates_and_genres.R
-#
-# It must use the updated spotify_clean dataset.
+# To validate numerical and categorical values, identify
+# confirmed invalid values and replace them with NA without
+# removing complete records.
 # ============================================================
 
 
-# Tasks for this script:
-# 1. Confirm that spotify_clean exists
-# 2. Identify the variables requiring value validation
-# 3. Research or confirm the valid rule for each variable
-# 4. Record the source or justification for every rule
-# 5. Validate the popularity target variable
-# 6. Validate duration_ms
-# 7. Validate danceability
-# 8. Validate energy
-# 9. Validate loudness
-# 10. Validate speechiness
-# 11. Validate acousticness
-# 12. Validate instrumentalness
-# 13. Validate liveness
-# 14. Validate valence
-# 15. Validate tempo
-# 16. Validate key
-# 17. Validate mode
-# 18. Validate time_signature
-# 19. Count invalid values for every checked variable
-# 20. Display examples of records containing invalid values
-# 21. Replace confirmed invalid values with NA
-# 22. Record how many values were changed to NA
-# 23. Investigate statistical outliers separately
-# 24. Avoid automatically removing valid outliers
-# 25. Create and export the validation tables
-# 26. Document every validation rule and result
-# 27. Pass spotify_clean to the missing-value stage
+#-----------------------------------------------------
+#Check the dataset before value validation
+
+nrow(clean_data)
+ncol(clean_data)
+sum(is.na(clean_data))
+
+missing_before_validation = sum(is.na(clean_data))
+
+#The dataset is passed from Stage 02b
+#Existing missing values are recorded before invalid values are changed
 
 
-# Variables requiring validation:
-#
-# Target and general variables:
-# popularity
-# duration_ms
-#
-# Continuous audio variables:
-# danceability
-# energy
-# loudness
-# speechiness
-# acousticness
-# instrumentalness
-# liveness
-# valence
-# tempo
-#
-# Musical category variables:
-# key
-# mode
-# time_signature
+#-----------------------------------------------------
+#Validate popularity
+
+sum(
+  !is.na(clean_data$popularity) &
+    (clean_data$popularity < 0 |
+       clean_data$popularity > 100)
+)
+
+invalid_popularity =
+  !is.na(clean_data$popularity) &
+  (clean_data$popularity < 0 |
+     clean_data$popularity > 100)
+
+#Popularity values must remain between 0 and 100
+#Values outside this range are treated as invalid
+
+clean_data[
+  invalid_popularity,
+  c("track_id", "track_name", "popularity")
+]
+
+clean_data$popularity[invalid_popularity] = NA
 
 
-# Required validation-table fields:
-# variable
-# approved_valid_rule
-# justification_or_source
-# invalid_count
-# action_taken
+#-----------------------------------------------------
+#Validate duration_ms
+
+sum(
+  !is.na(clean_data$duration_ms) &
+    clean_data$duration_ms <= 0
+)
+
+invalid_duration =
+  !is.na(clean_data$duration_ms) &
+  clean_data$duration_ms <= 0
+
+#duration_ms represents the length of a track in milliseconds
+#Zero and negative duration values are treated as invalid
+
+clean_data[
+  invalid_duration,
+  c("track_id", "track_name", "duration_ms")
+]
+
+clean_data$duration_ms[invalid_duration] = NA
 
 
-# Examples of invalid values:
-# Negative duration
-# Unsupported mode category
-# Unsupported key category
-# Impossible popularity score
-# Negative tempo
-# Audio-confidence values outside their approved range
+#-----------------------------------------------------
+#Validate danceability
+
+sum(
+  !is.na(clean_data$danceability) &
+    (clean_data$danceability < 0 |
+       clean_data$danceability > 1)
+)
+
+invalid_danceability =
+  !is.na(clean_data$danceability) &
+  (clean_data$danceability < 0 |
+     clean_data$danceability > 1)
+
+#Danceability values are expected to remain between 0 and 1
+
+clean_data$danceability[invalid_danceability] = NA
 
 
-# Examples of values that require investigation but may be valid:
-# Very long track duration
-# Very high tempo
-# Very low loudness
-# Extremely high instrumentalness
-#
-# These should not automatically be removed.
+#-----------------------------------------------------
+#Validate energy
+
+sum(
+  !is.na(clean_data$energy) &
+    (clean_data$energy < 0 |
+       clean_data$energy > 1)
+)
+
+invalid_energy =
+  !is.na(clean_data$energy) &
+  (clean_data$energy < 0 |
+     clean_data$energy > 1)
+
+#Energy values are expected to remain between 0 and 1
+
+clean_data$energy[invalid_energy] = NA
 
 
-# Planned outputs:
-# outputs/tables/value_validation_rules.csv
-# outputs/tables/invalid_values_summary.csv
-# outputs/tables/invalid_record_examples.csv
-# outputs/tables/outlier_investigation_summary.csv
+#-----------------------------------------------------
+#Validate speechiness
+
+sum(
+  !is.na(clean_data$speechiness) &
+    (clean_data$speechiness < 0 |
+       clean_data$speechiness > 1)
+)
+
+invalid_speechiness =
+  !is.na(clean_data$speechiness) &
+  (clean_data$speechiness < 0 |
+     clean_data$speechiness > 1)
+
+#Speechiness values are expected to remain between 0 and 1
+
+clean_data$speechiness[invalid_speechiness] = NA
 
 
-# Documentation file:
-# report/cleaning_documentation/
-# member3_value_validation_and_outliers.md
+#-----------------------------------------------------
+#Validate acousticness
+
+sum(
+  !is.na(clean_data$acousticness) &
+    (clean_data$acousticness < 0 |
+       clean_data$acousticness > 1)
+)
+
+invalid_acousticness =
+  !is.na(clean_data$acousticness) &
+  (clean_data$acousticness < 0 |
+     clean_data$acousticness > 1)
+
+#Acousticness values are expected to remain between 0 and 1
+
+clean_data$acousticness[invalid_acousticness] = NA
 
 
-# Documentation must explain:
-# 1. The validation rule for every variable
-# 2. The source or justification supporting the rule
-# 3. The number of invalid values found
-# 4. Examples of invalid records
-# 5. Why each value was considered invalid
-# 6. Which invalid values were changed to NA
-# 7. The difference between invalid values and outliers
-# 8. Which unusual values were retained and why
-# 9. The effect of validation on missing-value counts
-# 10. Any limitations in the selected validation rules
+#-----------------------------------------------------
+#Validate instrumentalness
+
+sum(
+  !is.na(clean_data$instrumentalness) &
+    (clean_data$instrumentalness < 0 |
+       clean_data$instrumentalness > 1)
+)
+
+invalid_instrumentalness =
+  !is.na(clean_data$instrumentalness) &
+  (clean_data$instrumentalness < 0 |
+     clean_data$instrumentalness > 1)
+
+#Instrumentalness values are expected to remain between 0 and 1
+
+clean_data$instrumentalness[invalid_instrumentalness] = NA
 
 
-# Important:
-# Do not remove complete records only because one value is invalid.
-# Replace confirmed invalid values with NA first.
-# Do not handle the resulting missing values in this script.
-# Do not automatically remove statistical outliers.
-# Do not export the final cleaned dataset in this script.
-# Do not perform final cleaned-data validation here.
+#-----------------------------------------------------
+#Validate liveness
+
+sum(
+  !is.na(clean_data$liveness) &
+    (clean_data$liveness < 0 |
+       clean_data$liveness > 1)
+)
+
+invalid_liveness =
+  !is.na(clean_data$liveness) &
+  (clean_data$liveness < 0 |
+     clean_data$liveness > 1)
+
+#Liveness values are expected to remain between 0 and 1
+
+clean_data$liveness[invalid_liveness] = NA
+
+
+#-----------------------------------------------------
+#Validate valence
+
+sum(
+  !is.na(clean_data$valence) &
+    (clean_data$valence < 0 |
+       clean_data$valence > 1)
+)
+
+invalid_valence =
+  !is.na(clean_data$valence) &
+  (clean_data$valence < 0 |
+     clean_data$valence > 1)
+
+#Valence values are expected to remain between 0 and 1
+
+clean_data$valence[invalid_valence] = NA
+
+
+#-----------------------------------------------------
+#Validate key
+
+sort(unique(clean_data$key))
+
+sum(
+  !is.na(clean_data$key) &
+    !(clean_data$key %in% c(-1, 0:11))
+)
+
+invalid_key =
+  !is.na(clean_data$key) &
+  !(clean_data$key %in% c(-1, 0:11))
+
+#Key uses standard pitch class notation from 0 to 11
+#-1 may represent that no musical key was detected
+#Other values are treated as invalid
+
+clean_data[
+  invalid_key,
+  c("track_id", "track_name", "key")
+]
+
+clean_data$key[invalid_key] = NA
+
+
+#-----------------------------------------------------
+#Validate mode
+
+sort(unique(clean_data$mode))
+
+sum(
+  !is.na(clean_data$mode) &
+    !(clean_data$mode %in% c(0, 1))
+)
+
+invalid_mode =
+  !is.na(clean_data$mode) &
+  !(clean_data$mode %in% c(0, 1))
+
+#Mode only supports 0 for minor and 1 for major
+#Other values are treated as invalid
+
+clean_data[
+  invalid_mode,
+  c("track_id", "track_name", "mode")
+]
+
+clean_data$mode[invalid_mode] = NA
+
+
+#-----------------------------------------------------
+#Validate time_signature
+
+sort(unique(clean_data$time_signature))
+
+sum(
+  !is.na(clean_data$time_signature) &
+    !(clean_data$time_signature %in% 3:7)
+)
+
+invalid_time_signature =
+  !is.na(clean_data$time_signature) &
+  !(clean_data$time_signature %in% 3:7)
+
+#Time signature values outside 3 to 7 are treated as invalid
+
+clean_data[
+  invalid_time_signature,
+  c("track_id", "track_name", "time_signature")
+]
+
+clean_data$time_signature[invalid_time_signature] = NA
+
+
+#-----------------------------------------------------
+#Validate tempo
+
+sum(
+  !is.na(clean_data$tempo) &
+    clean_data$tempo < 0
+)
+
+invalid_tempo =
+  !is.na(clean_data$tempo) &
+  clean_data$tempo < 0
+
+#Negative tempo values are invalid because tempo represents
+#beats per minute
+
+clean_data[
+  invalid_tempo,
+  c("track_id", "track_name", "tempo")
+]
+
+clean_data$tempo[invalid_tempo] = NA
+
+
+sum(
+  !is.na(clean_data$tempo) &
+    clean_data$tempo == 0
+)
+
+#Zero tempo values are recorded for investigation
+#but are not automatically changed to NA
+
+
+#-----------------------------------------------------
+#Investigate loudness
+
+summary(clean_data$loudness)
+
+sum(
+  !is.na(clean_data$loudness) &
+    (clean_data$loudness < -60 |
+       clean_data$loudness > 0)
+)
+
+#Loudness values outside -60 to 0 dB are recorded for investigation
+#They are not automatically treated as invalid because this is
+#a typical range rather than a strict valid range
+
+
+#-----------------------------------------------------
+#Create invalid value summary
+
+invalid_values_summary = data.frame(
+  variable = c(
+    "popularity",
+    "duration_ms",
+    "danceability",
+    "energy",
+    "speechiness",
+    "acousticness",
+    "instrumentalness",
+    "liveness",
+    "valence",
+    "tempo",
+    "key",
+    "mode",
+    "time_signature"
+  ),
+  
+  invalid_count = c(
+    sum(invalid_popularity),
+    sum(invalid_duration),
+    sum(invalid_danceability),
+    sum(invalid_energy),
+    sum(invalid_speechiness),
+    sum(invalid_acousticness),
+    sum(invalid_instrumentalness),
+    sum(invalid_liveness),
+    sum(invalid_valence),
+    sum(invalid_tempo),
+    sum(invalid_key),
+    sum(invalid_mode),
+    sum(invalid_time_signature)
+  )
+)
+
+invalid_values_summary
+
+
+#-----------------------------------------------------
+#Check missing values after value validation
+
+missing_after_validation = sum(is.na(clean_data))
+
+missing_before_validation
+missing_after_validation
+
+new_missing_from_validation =
+  missing_after_validation -
+  missing_before_validation
+
+new_missing_from_validation
+
+#The difference represents the number of confirmed invalid
+#values that were changed to NA during Stage 02c
+
+
+#-----------------------------------------------------
+#Final check
+
+nrow(clean_data)
+ncol(clean_data)
+colSums(is.na(clean_data))
+
+#No complete records are removed during Stage 02c
+#The resulting missing values will be handled during Stage 02d
