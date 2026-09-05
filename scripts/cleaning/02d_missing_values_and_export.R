@@ -60,7 +60,7 @@ nrow(clean_data)
 colSums(is.na(clean_data))
 sum(is.na(clean_data))
 
-#After removing rows with missing popularity, 4886 missing values remain
+#After removing rows with missing popularity, 4936 missing values remain
 #in the predictor and descriptive variables
 
 #-----------------------------------------------------
