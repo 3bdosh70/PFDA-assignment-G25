@@ -92,7 +92,7 @@ sum(duplicated(raw_data))
 duplicate_test = raw_data
 duplicate_test$X = NULL
 # A temporary copy is created so the X index can be removed
-# without changing the raw data, as X may hide exact duplicates.
+# without changing the raw data, as X may hide exact duplicates.q
 
 sum(duplicated(duplicate_test))
 #total of duplicates excluding "X" column
