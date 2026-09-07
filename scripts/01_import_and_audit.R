@@ -375,7 +375,7 @@ sum(!is.na(raw_data$loudness) & raw_data$loudness < -60)
 sum(!is.na(raw_data$loudness) & raw_data$loudness > 0)
 
 # Using the current reference interval of -60 to 0 dB, 140 loudness
-# values are flagged for further investigation: 24 are below -60 and
+# values are flagged for further investigation: 24 are below -60   and
 # 116 are above 0. These values are not treated as invalid during Stage 01
 # and will be verified during Stage 02c.
 
