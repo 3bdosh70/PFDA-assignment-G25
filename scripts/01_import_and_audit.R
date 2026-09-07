@@ -99,19 +99,19 @@ sum(duplicated(duplicate_test))
 #There are 396 redundant duplicate occurrences.
 
 duplicate_test[duplicated(duplicate_test), ]
-View(duplicate_test[duplicated(duplicate_test), ])
+#View(duplicate_test[duplicated(duplicate_test), ])
 
 ####################
 duplicate_rows = duplicate_test[duplicated(duplicate_test), ]
-View(head(duplicate_rows))
-View(duplicate_rows)
+#View(head(duplicate_rows))
+#View(duplicate_rows)
 
 ###################
 all_duplicate_rows = duplicate_test[
   duplicated(duplicate_test) |
     duplicated(duplicate_test, fromLast = TRUE), ]
 
-View(head((all_duplicate_rows)))
+#View(head((all_duplicate_rows)))
 #-----------------------------------------------------
 #Finding repeated track IDs
 
@@ -121,7 +121,7 @@ length(unique(raw_data$track_id))
 track_id_number = table(raw_data$track_id)
 repeated_track_ids = track_id_number[track_id_number > 1]
 repeated_track_ids
-View(repeated_track_ids)
+#View(repeated_track_ids)
 length(repeated_track_ids)
 #Identify repeated IDs
 
@@ -131,7 +131,7 @@ repeated_track_rows =
 nrow(repeated_track_rows)
 #Count all rows belonging to repeated IDs
 
-View(repeated_track_ids)
+#View(repeated_track_ids)
 #Display the record count for each repeated ID
 
 id_genre = unique(
@@ -148,7 +148,7 @@ View(genre_counts)
 multiple_genre_ids = genre_counts[genre_counts > 1]
 
 multiple_genre_ids
-View(multiple_genre_ids)
+#View(multiple_genre_ids)
 
 #-----------------------------------------------------
 #Repeated track IDs are checked to determine whether the same track 
@@ -163,7 +163,7 @@ different_popularity_ids =
   popularity_counts[popularity_counts > 1]
 
 different_popularity_ids
-View(different_popularity_ids)
+#View(different_popularity_ids)
 
 #-----------------------------------------------------
 # Repeated track IDs are checked to determine whether the same track has
@@ -182,7 +182,7 @@ audio_counts = table(id_audio$track_id)
 different_audio_ids = audio_counts[audio_counts > 1]
 
 different_audio_ids
-View(different_audio_ids)
+#View(different_audio_ids)
 #-----------------------------------------------------
 
 exact_duplicate_flag =
@@ -212,8 +212,8 @@ nrow(exact_duplicate_records)
 nrow(repeated_nonduplicate_records)
 #40114 rows contain repeated track IDs but are not exact duplicates.
 
-View(exact_duplicate_records)
-View(repeated_nonduplicate_records)
+#View(exact_duplicate_records)
+#View(repeated_nonduplicate_records)
 #-----------------------------------------------------
 #Categorical Values
 
