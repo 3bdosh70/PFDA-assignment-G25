@@ -5,22 +5,23 @@
 # ============================================================
 
 # Script: MAIN.R
-# Group Members:
+# Responsible students:
 # Name:
 # TP Number:
-#
+
 # Purpose:
-# To keep the group's R workflow in one continuously expandable
-# script. The current code includes data import, preliminary audit,
-# cleaning, transformation and validation. Additional preparation,
-# exploration and analysis code can be added later.
+# To run the complete current workflow in one file:
+# 2.1 import and preliminary audit, followed by
+# data cleaning, transformation and validation.
+#
+# The missing-value treatment and final export remain pending.
 # ============================================================
 
 library(dplyr)
 
 
 # ============================================================
-# 1. DATA IMPORT AND PRELIMINARY EXPLORATION
+# 2.1 DATA IMPORT AND PRELIMINARY EXPLORATION
 # ============================================================
 
 #import and test the dataset
@@ -52,7 +53,7 @@ nrow(raw_data)
 str(raw_data)
 #we have compared the columns data types with the file "dataset_description.txt"
 #the decimal audio features are represented as numeric in R, which is appropriate for the documented float variables
-#any required structural conversions will be handled in the Data Preparation stage
+#any required structural conversions will be handled during Data Preparation
 
 #-----------------------------------------------------
 
@@ -243,7 +244,7 @@ unique(raw_data$mode)
 unique(raw_data$time_signature)
 #Estimated time signature (number of beats per bar)
 #Time signature contains unusual values including −1, 0, 1, 9, 12, and 15.
-#Their validity will be checked against an authoritative reference during the Data Validation section before any values are changed.
+#Their validity will be checked against an authoritative reference during Data Validation before any values are changed.
 
 
 sort(unique(raw_data$track_genre))
@@ -312,7 +313,7 @@ sum(!is.na(raw_data$popularity) & raw_data$popularity > 100)
 
 # A total of 75 popularity values fall outside the currently checked range of 0–100:
 # 24 are below 0 and 51 are above 100.
-# Their validity will be verified using an authoritative reference during the Data Validation section.
+# Their validity will be verified using an authoritative reference during Data Validation.
 
 
 # -------------------------------------------------------------
@@ -349,7 +350,7 @@ sapply(
 # Danceability, energy, speechiness, acousticness, instrumentalness,
 # liveness and valence each contain 31 values outside the currently checked range of 0–1.
 # These potential range violations will be verified before treatment
-# during the Data Validation section.
+# during Data Validation.
 
 
 # -------------------------------------------------------------
@@ -366,7 +367,7 @@ sum(!is.na(raw_data$tempo) & raw_data$tempo == 0)
 
 # Tempo contains 194 non-positive values: 37 are negative and
 # 157 are zero. These values are recorded for further validation
-# during the Data Validation section before any treatment.
+# during Data Validation before any treatment.
 
 
 # -------------------------------------------------------------
@@ -386,12 +387,12 @@ sum(!is.na(raw_data$loudness) & raw_data$loudness > 0)
 # Using the current reference interval of -60 to 0 dB, 140 loudness
 # values are flagged for further investigation: 24 are below -60 and
 # 116 are above 0. These values are not treated as invalid during Stage 01
-# and will be verified during the Data Validation section.
+# and will be verified during Data Validation.
 
 #-----------------------------------------------------
-#Preliminary Audit Checkpoint
+#Stage 01 Audit Summary
 
-cat("\n--- PRELIMINARY DATA AUDIT CHECKPOINT ---\n")
+cat("\n--- DATASET AUDIT SUMMARY ---\n")
 cat("Rows:", nrow(raw_data), "\n")
 cat("Columns:", ncol(raw_data), "\n")
 cat("Total missing cells:", sum(is.na(raw_data)), "\n")
@@ -416,21 +417,17 @@ cat(
   "\n"
 )
 
-cat("\nPreliminary audit completed: raw_data remains unchanged. Continuing to Data Preparation.\n")
+cat("\nStage 01 completed: no data were cleaned or removed.\n")
 
-# ============================================================
-# 2. DATA PREPARATION
-# ============================================================
 
-#The raw dataset was imported and audited above.
-#The following values are retained for later preparation summaries.
+#-----------------------------------------------------
+#Record original dataset totals for the final preparation summary
 
 original_rows = nrow(raw_data)
 original_columns = ncol(raw_data)
 original_missing = sum(is.na(raw_data))
 
 
-# ============================================================
 # 2.2 DATA CLEANING AND PREPROCESSING
 # ============================================================
 
@@ -1222,8 +1219,8 @@ new_missing_from_validation
 #The missing-value treatment has not yet been implemented
 #in the existing project files.
 
-#02d_missing_values_and_export.R currently contains the planned
-#rules only, so no new treatment is invented here.
+#The final missing-value treatment is still pending.
+#No treatment is applied until the group approves the method.
 
 
 #-----------------------------------------------------
@@ -1284,10 +1281,10 @@ missing_percentage_before_treatment
 
 
 # ============================================================
-# CURRENT DATA PREPARATION VERIFICATION
+# FINAL DATA PREPARATION VERIFICATION
 # ============================================================
 
-#This is the current checkpoint before the missing-value
+#This is the current final state before the missing-value
 #treatment decisions in the section above are implemented.
 
 nrow(clean_data)
@@ -1303,10 +1300,10 @@ length(
 
 
 # ============================================================
-# CURRENT DATA PREPARATION SUMMARY
+# FINAL DATA PREPARATION SUMMARY
 # ============================================================
 
-cat("\n--- CURRENT DATA PREPARATION STATUS ---\n")
+cat("\n--- DATA PREPARATION SUMMARY ---\n")
 
 cat(
   "Original rows:",
@@ -1363,24 +1360,16 @@ cat(
 )
 
 cat(
-  "\nMissing-value treatment and export are still pending. More project code can be added below.\n"
+  "\nMissing-value treatment and final export are still pending.\n"
 )
 
 
 # ============================================================
-# PENDING DATA PREPARATION WORK
+# FINAL EXPORT
 # ============================================================
 
-#Do not export the cleaned dataset yet.
+#Do not export the final cleaned dataset yet.
 #The missing-value treatment must be approved and implemented first.
 
 #Planned output:
 #data/processed/spotify_tracks_clean.csv
-
-# ============================================================
-# NEXT PROJECT CODE
-# ============================================================
-
-#Additional data preparation, general exploration, analysis,
-#objective work and extra features can be added below as the
-#project continues.
