@@ -68,6 +68,8 @@ objective4_data =
         mode == 1 ~ "Major"
       )
   )
+
+
 #-----------------------------------------------------
 # Summary by mode
 
@@ -280,6 +282,77 @@ head(
 
 
 #-----------------------------------------------------
+# Cleaner highest-profile output
+
+reliable_profiles %>%
+  select(
+    key,
+    mode_name,
+    time_signature,
+    Count,
+    Mean_Popularity,
+    Median_Popularity
+  ) %>%
+  head(15)
+
+
+#-----------------------------------------------------
+# Focus on strongest profile from Analysis 4-1
+# Key 4 + Major
+
+key4_major =
+  objective4_data %>%
+  filter(
+    key == 4,
+    mode_name == "Major"
+  )
+
+
+#-----------------------------------------------------
+# Compare time signatures inside Key 4 Major
+
+key4_major_summary =
+  key4_major %>%
+  group_by(
+    time_signature
+  ) %>%
+  summarise(
+    Count = n(),
+    Mean_Popularity =
+      mean(popularity, na.rm = TRUE),
+    Median_Popularity =
+      median(popularity, na.rm = TRUE),
+    SD_Popularity =
+      sd(popularity, na.rm = TRUE)
+  ) %>%
+  arrange(
+    desc(Median_Popularity)
+  )
+
+key4_major_summary
+
+
+#-----------------------------------------------------
+# Visualize strongest profile by time signature
+
+ggplot(
+  key4_major,
+  aes(
+    x = factor(time_signature),
+    y = popularity
+  )
+) +
+  geom_boxplot(
+    fill = "lightblue"
+  ) +
+  labs(
+    title = "Popularity of Key 4 Major Tracks by Time Signature",
+    x = "Time Signature",
+    y = "Popularity Score"
+  )
+
+
+#-----------------------------------------------------
 # Time signature and key visualization
 
 ggplot(
@@ -418,7 +491,7 @@ nrow(testing_data)
 
 #-----------------------------------------------------
 # Model 1
-# Basic combined model
+# Main effects model
 
 model_1 =
   lm(
@@ -437,7 +510,7 @@ summary(
 
 #-----------------------------------------------------
 # Model 2
-# Include interaction between key, mode and time signature
+# Interaction model
 
 model_2 =
   lm(
@@ -481,7 +554,7 @@ results_model_1 =
   data.frame(
     Actual =
       testing_data$popularity,
-
+    
     Predicted =
       prediction_model_1
   )
@@ -492,10 +565,10 @@ results_model_1 =
   mutate(
     Error =
       Actual - Predicted,
-
+    
     Absolute_Error =
       abs(Error),
-
+    
     Squared_Error =
       Error ^ 2
   )
@@ -513,7 +586,7 @@ results_model_2 =
   data.frame(
     Actual =
       testing_data$popularity,
-
+    
     Predicted =
       prediction_model_2
   )
@@ -524,10 +597,10 @@ results_model_2 =
   mutate(
     Error =
       Actual - Predicted,
-
+    
     Absolute_Error =
       abs(Error),
-
+    
     Squared_Error =
       Error ^ 2
   )
@@ -655,28 +728,29 @@ model_comparison =
   data.frame(
     Model =
       c(
-        "Basic Model",
+        "Main Effects Model",
         "Interaction Model"
       ),
-
+    
     MAE =
       c(
         MAE_model_1,
         MAE_model_2
       ),
-
+    
     RMSE =
       c(
         RMSE_model_1,
         RMSE_model_2
       ),
-
+    
     R_Squared =
       c(
         R2_model_1,
         R2_model_2
       )
   )
+
 model_comparison
 
 
@@ -698,7 +772,7 @@ ggplot(
     intercept = 0
   ) +
   labs(
-    title = "Actual vs Predicted Popularity - Basic Model",
+    title = "Actual vs Predicted Popularity - Main Effects Model",
     x = "Actual Popularity",
     y = "Predicted Popularity"
   )
@@ -743,7 +817,51 @@ ggplot(
     color = "white"
   ) +
   labs(
-    title = "Distribution of Prediction Errors",
+    title = "Distribution of Prediction Errors - Interaction Model",
     x = "Prediction Error",
     y = "Frequency"
   )
+
+
+#-----------------------------------------------------
+# Final prediction performance
+
+cat(
+  "\n--- OBJECTIVE 4 PREDICTION RESULTS ---\n"
+)
+
+cat(
+  "Training records:",
+  nrow(training_data),
+  "\n"
+)
+
+cat(
+  "Testing records:",
+  nrow(testing_data),
+  "\n"
+)
+
+cat(
+  "MAE:",
+  MAE_model_2,
+  "\n"
+)
+
+cat(
+  "RMSE:",
+  RMSE_model_2,
+  "\n"
+)
+
+cat(
+  "Testing R-squared:",
+  R2_model_2,
+  "\n"
+)
+
+cat(
+  "Explained variation (%):",
+  R2_model_2 * 100,
+  "%\n"
+)
