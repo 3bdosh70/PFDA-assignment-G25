@@ -1,4 +1,4 @@
-
+#Update 
 library(dplyr)
 library(ggplot2)
 
@@ -489,6 +489,8 @@ genre_counts =
 genre_counts
 
 length(genre_counts)
+
+
 #-----------------------------------------------------
 # Basic popularity comparison by explicit status
 
@@ -638,13 +640,6 @@ write.csv(
 
 
 write.csv(
-  top_10_genres_df,
-  "outputs/tables/top_10_genres.csv",
-  row.names = FALSE
-)
-
-
-write.csv(
   popularity_by_explicit,
   "outputs/tables/popularity_by_explicit.csv",
   row.names = FALSE
@@ -664,6 +659,7 @@ write.csv(
   row.names = FALSE
 )
 
+
 #-----------------------------------------------------
 # ============================================================
 # 3.0 GENERAL DATA EXPLORATION
@@ -673,7 +669,10 @@ library(ggplot2)
 
 #Use the prepared dataset for general exploration
 
-exploration_data = clean_data
+exploration_data = read.csv(
+  "data/processed/spotify_tracks_clean.csv",
+  stringsAsFactors = FALSE
+)
 
 
 #-----------------------------------------------------
@@ -730,7 +729,7 @@ unique_genres
 
 
 dataset_profile = data.frame(
-
+  
   Measurement = c(
     "Total records",
     "Unique track IDs",
@@ -738,7 +737,7 @@ dataset_profile = data.frame(
     "Unique albums",
     "Unique genres"
   ),
-
+  
   Value = c(
     total_records,
     unique_tracks,
@@ -808,17 +807,17 @@ numeric_variables = c(
 #Numerical summary statistics
 
 numeric_summary = data.frame(
-
+  
   Variable =
     numeric_variables,
-
+  
   Minimum =
     sapply(
       exploration_data[numeric_variables],
       min,
       na.rm = TRUE
     ),
-
+  
   Q1 =
     sapply(
       exploration_data[numeric_variables],
@@ -829,21 +828,21 @@ numeric_summary = data.frame(
           na.rm = TRUE
         )
     ),
-
+  
   Median =
     sapply(
       exploration_data[numeric_variables],
       median,
       na.rm = TRUE
     ),
-
+  
   Mean =
     sapply(
       exploration_data[numeric_variables],
       mean,
       na.rm = TRUE
     ),
-
+  
   Q3 =
     sapply(
       exploration_data[numeric_variables],
@@ -854,14 +853,14 @@ numeric_summary = data.frame(
           na.rm = TRUE
         )
     ),
-
+  
   Maximum =
     sapply(
       exploration_data[numeric_variables],
       max,
       na.rm = TRUE
     ),
-
+  
   Standard_Deviation =
     sapply(
       exploration_data[numeric_variables],
@@ -1246,50 +1245,6 @@ genre_counts
 length(genre_counts)
 
 
-#-----------------------------------------------------
-#Top 10 genres
-
-top_10_genres =
-  head(
-    genre_counts,
-    10
-  )
-
-top_10_genres
-
-
-top_10_genres_df = data.frame(
-
-  Genre =
-    names(top_10_genres),
-
-  Count =
-    as.numeric(top_10_genres)
-)
-
-top_10_genres_df
-
-
-ggplot(
-  top_10_genres_df,
-  aes(
-    x = reorder(
-      Genre,
-      Count
-    ),
-    y = Count
-  )
-) +
-  geom_col(
-    fill = "steelblue"
-  ) +
-  coord_flip() +
-  labs(
-    title = "Top 10 Genres by Number of Records",
-    x = "Genre",
-    y = "Number of Records"
-  )
-
 
 #-----------------------------------------------------
 #Basic popularity comparison by explicit status
@@ -1298,16 +1253,16 @@ popularity_by_explicit =
   exploration_data %>%
   group_by(explicit) %>%
   summarise(
-
+    
     Count =
       n(),
-
+    
     Mean_Popularity =
       mean(
         popularity,
         na.rm = TRUE
       ),
-
+    
     Median_Popularity =
       median(
         popularity,
@@ -1343,16 +1298,16 @@ popularity_by_mode =
   exploration_data %>%
   group_by(mode) %>%
   summarise(
-
+    
     Count =
       n(),
-
+    
     Mean_Popularity =
       mean(
         popularity,
         na.rm = TRUE
       ),
-
+    
     Median_Popularity =
       median(
         popularity,
@@ -1400,13 +1355,13 @@ correlation_matrix
 #Correlation of each numerical variable with popularity
 
 popularity_correlations = data.frame(
-
+  
   Variable =
     correlation_variables[
       correlation_variables !=
         "popularity"
     ],
-
+  
   Correlation =
     as.numeric(
       correlation_matrix[
@@ -1466,11 +1421,6 @@ write.csv(
   row.names = FALSE
 )
 
-write.csv(
-  top_10_genres_df,
-  "outputs/tables/top_10_genres.csv",
-  row.names = FALSE
-)
 
 write.csv(
   popularity_by_explicit,

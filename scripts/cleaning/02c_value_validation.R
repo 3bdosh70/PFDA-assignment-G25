@@ -277,17 +277,19 @@ clean_data$time_signature[invalid_time_signature] = NA
 #-----------------------------------------------------
 # Validate tempo
 
+summary(clean_data$tempo)
+
 sum(
   !is.na(clean_data$tempo) &
-    clean_data$tempo < 0
+    clean_data$tempo <= 0
 )
 
 invalid_tempo =
   !is.na(clean_data$tempo) &
-  clean_data$tempo < 0
+  clean_data$tempo <= 0
 
 # Tempo represents beats per minute
-# Negative tempo values are therefore treated as invalid
+# Zero and negative tempo values are treated as invalid
 
 clean_data[
   invalid_tempo,
@@ -297,17 +299,6 @@ clean_data[
 clean_data$tempo[invalid_tempo] = NA
 
 
-# Check zero tempo values separately
-
-sum(
-  !is.na(clean_data$tempo) &
-    clean_data$tempo == 0
-)
-
-# Zero tempo values are recorded for investigation
-# but are not automatically changed to NA
-
-
 #-----------------------------------------------------
 # Validate loudness
 
@@ -315,18 +306,17 @@ summary(clean_data$loudness)
 
 sum(
   !is.na(clean_data$loudness) &
-    abs(clean_data$loudness) > 60
+    (clean_data$loudness < -60 |
+       clean_data$loudness > 0)
 )
 
 invalid_loudness =
   !is.na(clean_data$loudness) &
-  abs(clean_data$loudness) > 60
+  (clean_data$loudness < -60 |
+     clean_data$loudness > 0)
 
-# Loudness values typically occur around the negative decibel range
-# The dataset contains a small number of slightly positive values,
-# so these are not automatically removed
-# Only clearly extreme values greater than 60 dB in absolute
-# magnitude are treated as invalid
+# Loudness values typically range between -60 and 0 dB
+# Values outside this reasonable range are treated as invalid
 
 clean_data[
   invalid_loudness,
