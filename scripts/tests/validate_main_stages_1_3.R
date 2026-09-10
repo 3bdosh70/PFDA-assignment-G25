@@ -30,6 +30,8 @@ stopifnot(
   length(unique(run$clean_data$track_genre)) == 114L,
   !anyNA(run$clean_data),
   !anyDuplicated(run$clean_data),
+  identical(run$exploration_data[names(run$clean_data)], run$clean_data),
+  identical(run$exploration_data$duration_min, run$clean_data$duration_ms / 60000),
   all(is.finite(run$correlation_matrix)),
   isTRUE(all.equal(run$correlation_matrix,
     cor(run$clean_data[run$correlation_variables]))),
@@ -40,11 +42,19 @@ exported = read.csv(file.path(run$output_dir, "spotify_tracks_clean.csv"),
 reference = read.csv(file.path(repo, "data", "processed", "spotify_tracks_clean.csv"),
   stringsAsFactors = FALSE)
 stopifnot(isTRUE(all.equal(exported, reference, check.attributes = FALSE)))
+stopifnot(isTRUE(all.equal(run$correlation_matrix,
+  cor(run$clean_data[run$correlation_variables], use = "pairwise.complete.obs"))))
+for (counts in list(run$explicit_counts, run$mode_counts, run$time_signature_counts)) {
+  stopifnot(identical(counts / sum(counts) * 100, prop.table(counts) * 100))
+}
 for (name in c("general_dataset_profile", "general_numeric_summary",
                "popularity_by_explicit", "popularity_by_mode", "popularity_correlations")) {
   table = read.csv(file.path(run$output_dir, "tables", paste0(name, ".csv")))
   stopifnot(!anyNA(table))
 }
+source(file.path(repo, "scripts", "05_objective2_rhythm.R"), local = run, echo = FALSE)
+stopifnot(!anyNA(run$exploration_data$duration_group),
+  nrow(run$exploration_data) == nrow(run$clean_data))
 
 # A malformed input must fail explicitly before cleaning rather than silently
 # truncating integers, misclassifying explicit labels or accepting bad schemas.
@@ -74,5 +84,6 @@ bad$energy = NULL
 check_rejection(bad, "expected 21 columns")
 setwd(repo)
 cat("\nPASS: full source() run, reference dataset comparison, 13 plot exports,\n",
+    "unchanged percentages/correlations, Objective 2 compatibility,\n",
     "numeric tables, data invariants and five malformed-input checks.\n",
     "Temporary validation outputs:", fixture, "\n")

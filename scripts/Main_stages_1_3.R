@@ -2240,9 +2240,7 @@ explicit_counts =
 
 explicit_counts
 
-prop.table(
-  explicit_counts
-) * 100
+explicit_counts / sum(explicit_counts) * 100
 
 
 exploration_plot = ggplot(
@@ -2279,9 +2277,7 @@ mode_counts =
 
 mode_counts
 
-prop.table(
-  mode_counts
-) * 100
+mode_counts / sum(mode_counts) * 100
 
 #0 = Minor
 #1 = Major
@@ -2333,9 +2329,7 @@ time_signature_counts =
 
 time_signature_counts
 
-prop.table(
-  time_signature_counts
-) * 100
+time_signature_counts / sum(time_signature_counts) * 100
 
 
 exploration_plot = ggplot(
@@ -2487,7 +2481,7 @@ correlation_data =
 correlation_matrix =
   cor(
     correlation_data,
-    use = "pairwise.complete.obs"
+    use = "complete.obs"
   )
 
 correlation_matrix
@@ -2636,4 +2630,5 @@ write.csv(invalid_values_summary,
 write.csv(data.frame(Variable = names(prepared_before_imputation),
   Missing_Before_Treatment = colSums(is.na(prepared_before_imputation))),
   file.path(output_dir, "tables", "missing_before_treatment.csv"), row.names = FALSE)
+exploration_data$duration_min = exploration_data$duration_ms / 60000
 cat("\nStages 1-3 completed and data checks passed. Outputs:", output_dir, "\n")
