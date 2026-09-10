@@ -1,117 +1,48 @@
 # ============================================================
-# GROUP 25 - MAIN WORKFLOW: STAGES 1 TO 3
-# ============================================================
-# Consolidated from 01_import_and_audit.R, 02_data_preparation.R,
-# cleaning/02c_value_validation.R, cleaning/02d_missing_values_and_export.R
-# and 03_general_exploration.R. The completed 02c/02d rules supersede
-# stale validation and pending-treatment sections in 02_data_preparation.R.
-# Run from the project root: source("scripts/Main_stages_1_3.R")
-# Or: Rscript --vanilla scripts/Main_stages_1_3.R
-# One audit, one preparation stage and one general exploration stage.
-# Generated data, tables and plots go to outputs/main_stages_1_3/.
-#
-# Cleaning follows the existing project rules. Median/mode imputation
-# here is for descriptive exploration. Prediction must split the data
-# before learning imputation values, using the pre-imputation copy.
-# The completed 02c policy treats tempo <= 0 and loudness outside
-# [-60, 0] as invalid, then applies the existing 02d missing-value treatment.
-# Repeated track IDs across genres remain; rows are not independent songs.
-
-library(dplyr)
-library(ggplot2)
-
-# Locate the project when run from its root, scripts folder, or by file path.
-script_args = grep("^--file=", commandArgs(FALSE), value = TRUE)
-script_path = if (length(script_args)) sub("^--file=", "", script_args[1]) else ""
-for (source_frame in sys.frames()) {
-  if (!is.null(source_frame$ofile)) script_path = source_frame$ofile
-}
-project_candidates = c(getwd(), dirname(getwd()))
-if (nzchar(script_path)) {
-  project_candidates = c(project_candidates,
-    dirname(dirname(normalizePath(script_path, mustWork = TRUE))))
-}
-project_candidates = project_candidates[
-  file.exists(file.path(project_candidates, "data", "raw", "spotify_tracks_data.csv"))
-]
-if (!length(project_candidates)) {
-  stop("Cannot find data/raw/spotify_tracks_data.csv. Run from the project root.")
-}
-project_dir = normalizePath(project_candidates[1], mustWork = TRUE)
-output_dir = file.path(project_dir, "outputs", "main_stages_1_3")
-dir.create(file.path(output_dir, "tables"), recursive = TRUE, showWarnings = FALSE)
-dir.create(file.path(output_dir, "plots"), recursive = TRUE, showWarnings = FALSE)
-if (!all(dir.exists(file.path(output_dir, c("tables", "plots"))))) {
-  stop("Cannot create output folders. Check write permission for outputs/main_stages_1_3.")
-}
-
-# ============================================================
 # PROGRAMMING FOR DATA ANALYSIS
 # GROUP 25
 # SONG POPULARITY PREDICTION
 # ============================================================
 
-# Script: 01_import_and_audit.R
-# Responsible student:
+# Script: MAIN.R
+# Responsible students:
 # Name:
 # TP Number:
 
 # Purpose:
-# To import and inspect the original Spotify dataset without
-# changing or cleaning the original records.
+# To run the complete current workflow in one file:
+# 2.1 import and preliminary audit, followed by
+# data cleaning, transformation and validation.
+#
+# The missing-value treatment and final export remain pending.
+# General exploration is included after the current preparation stage.
+# ============================================================
+
+library(dplyr)
+
+
+# ============================================================
+# 2.1 DATA IMPORT AND PRELIMINARY EXPLORATION
 # ============================================================
 
 #import and test the dataset
 #compare the names and data types of the columns
 getwd()
 raw_data = read.csv(
-  file.path(project_dir, "data", "raw", "spotify_tracks_data.csv"),
+  "data/raw/spotify_tracks_data.csv",
   na.strings = c("", "NA", "N/A", "NULL")
 )
-
-# Fail before cleaning if the input schema or types are incompatible.
-required_columns = c("track_id", "artists", "album_name", "track_name",
-  "popularity", "duration_ms", "explicit", "danceability", "energy", "key",
-  "loudness", "mode", "speechiness", "acousticness", "instrumentalness",
-  "liveness", "valence", "tempo", "time_signature", "track_genre")
-if (!identical(names(raw_data), c("X", required_columns)) || nrow(raw_data) == 0) {
-  stop("Raw dataset must have the expected 21 columns in order and at least one row.")
-}
-numeric_columns = setdiff(required_columns,
-  c("track_id", "artists", "album_name", "track_name", "explicit", "track_genre"))
-for (column in numeric_columns) {
-  if (!is.numeric(raw_data[[column]]) ||
-      any(!is.finite(raw_data[[column]]) & !is.na(raw_data[[column]]))) {
-    stop(paste("Non-numeric or infinite input in", column))
-  }
-}
-integer_columns = c("popularity", "duration_ms", "key", "mode", "time_signature")
-for (column in integer_columns) {
-  values = raw_data[[column]]
-  if (any(!is.na(values) & (values %% 1 != 0 | abs(values) > .Machine$integer.max))) {
-    stop(paste("Unsafe integer conversion in", column))
-  }
-}
-explicit_values = tolower(trimws(as.character(raw_data$explicit)))
-if (any(!is.na(explicit_values) & !explicit_values %in% c("true", "false"))) {
-  stop("Unexpected explicit label: expected True/False or TRUE/FALSE.")
-}
-if (any(is.na(raw_data$track_id) | trimws(raw_data$track_id) == "") ||
-    any(is.na(raw_data$track_genre) | trimws(raw_data$track_genre) == "")) {
-  stop("Track IDs and genres must not be missing.")
-}
-
 #we sort all missing values as null for the program so it's all identifed under the same concept
 head(raw_data)
 #dataset was imported successfully and tested to be matching the actual csv file comparing with the first 6 rows
 
 names(raw_data)
 #current columns for the raw data
-#"X"                "track_id"         "artists"          "album_name"
-#"track_name"       "popularity"       "duration_ms"      "explicit"
-#"danceability"     "energy"           "key"              "loudness"
+#"X"                "track_id"         "artists"          "album_name"      
+#"track_name"       "popularity"       "duration_ms"      "explicit"        
+#"danceability"     "energy"           "key"              "loudness"        
 #"mode"             "speechiness"      "acousticness"     "instrumentalness"
-#"liveness"         "valence"          "tempo"            "time_signature"
+#"liveness"         "valence"          "tempo"            "time_signature"  
 #"track_genre"
 ncol(raw_data)
 nrow(raw_data)
@@ -123,7 +54,7 @@ nrow(raw_data)
 str(raw_data)
 #we have compared the columns data types with the file "dataset_description.txt"
 #the decimal audio features are represented as numeric in R, which is appropriate for the documented float variables
-#any required structural conversions will be handled in Stage 02a
+#any required structural conversions will be handled during Data Preparation
 
 #-----------------------------------------------------
 
@@ -132,7 +63,7 @@ str(raw_data)
 colSums(is.na(raw_data))
 sort(colSums(is.na(raw_data)), decreasing = TRUE)
 sum(is.na(raw_data))
-if (interactive()) View(colSums(is.na(raw_data)))
+#View(colSums(is.na(raw_data)))
 
 (colSums(is.na(raw_data)) / nrow(raw_data)) * 100
 # Missing percentage for every column
@@ -172,7 +103,7 @@ sum(duplicated(raw_data))
 duplicate_test = raw_data
 duplicate_test$X = NULL
 # A temporary copy is created so the X index can be removed
-# without changing the raw data, as X may hide exact duplicates.q
+# without changing the raw data, as X may hide exact duplicates.
 
 sum(duplicated(duplicate_test))
 #total of duplicates excluding "X" column
@@ -223,7 +154,7 @@ id_genre = unique(
 #This prevents meaningful genre records from being treated as exact duplicates.
 
 genre_counts = table(id_genre$track_id)
-if (interactive()) View(genre_counts)
+#View(genre_counts)
 
 multiple_genre_ids = genre_counts[genre_counts > 1]
 
@@ -231,7 +162,7 @@ multiple_genre_ids
 #View(multiple_genre_ids)
 
 #-----------------------------------------------------
-#Repeated track IDs are checked to determine whether the same track
+#Repeated track IDs are checked to determine whether the same track 
 #has multiple popularity values
 id_popularity = unique(
   repeated_track_rows[c("track_id", "popularity")]
@@ -314,7 +245,7 @@ unique(raw_data$mode)
 unique(raw_data$time_signature)
 #Estimated time signature (number of beats per bar)
 #Time signature contains unusual values including −1, 0, 1, 9, 12, and 15.
-#Their validity will be checked against an authoritative reference during Stage 02c before any values are changed.
+#Their validity will be checked against an authoritative reference during Data Validation before any values are changed.
 
 
 sort(unique(raw_data$track_genre))
@@ -383,7 +314,7 @@ sum(!is.na(raw_data$popularity) & raw_data$popularity > 100)
 
 # A total of 75 popularity values fall outside the currently checked range of 0–100:
 # 24 are below 0 and 51 are above 100.
-# Their validity will be verified using an authoritative reference during Stage 02c.
+# Their validity will be verified using an authoritative reference during Data Validation.
 
 
 # -------------------------------------------------------------
@@ -420,7 +351,7 @@ sapply(
 # Danceability, energy, speechiness, acousticness, instrumentalness,
 # liveness and valence each contain 31 values outside the currently checked range of 0–1.
 # These potential range violations will be verified before treatment
-# during Stage 02c.
+# during Data Validation.
 
 
 # -------------------------------------------------------------
@@ -437,7 +368,7 @@ sum(!is.na(raw_data$tempo) & raw_data$tempo == 0)
 
 # Tempo contains 194 non-positive values: 37 are negative and
 # 157 are zero. These values are recorded for further validation
-# during Stage 02c before any treatment.
+# during Data Validation before any treatment.
 
 
 # -------------------------------------------------------------
@@ -455,9 +386,9 @@ sum(!is.na(raw_data$loudness) & raw_data$loudness < -60)
 sum(!is.na(raw_data$loudness) & raw_data$loudness > 0)
 
 # Using the current reference interval of -60 to 0 dB, 140 loudness
-# values are flagged for further investigation: 24 are below -60   and
+# values are flagged for further investigation: 24 are below -60 and
 # 116 are above 0. These values are not treated as invalid during Stage 01
-# and will be verified during Stage 02c.
+# and will be verified during Data Validation.
 
 #-----------------------------------------------------
 #Stage 01 Audit Summary
@@ -490,10 +421,16 @@ cat(
 cat("\nStage 01 completed: no data were cleaned or removed.\n")
 
 
-# STAGE 2: DATA PREPARATION
+#-----------------------------------------------------
+#Record original dataset totals for the final preparation summary
+
 original_rows = nrow(raw_data)
 original_columns = ncol(raw_data)
 original_missing = sum(is.na(raw_data))
+
+
+# 2.2 DATA CLEANING AND PREPROCESSING
+# ============================================================
 
 #Create a working copy of the raw dataset
 
@@ -631,7 +568,7 @@ clean_data$time_signature =
 unique(clean_data$explicit)
 
 clean_data$explicit =
-  tolower(trimws(as.character(clean_data$explicit))) == "true"
+  clean_data$explicit == "True"
 
 unique(clean_data$explicit)
 
@@ -1174,11 +1111,11 @@ clean_data$time_signature[
 
 invalid_tempo =
   !is.na(clean_data$tempo) &
-  clean_data$tempo <= 0
+  clean_data$tempo < 0
 
 sum(invalid_tempo)
 
-#Zero and negative tempo values are treated as invalid, following 02c.
+#Negative tempo values are treated as invalid
 
 clean_data[
   invalid_tempo,
@@ -1199,7 +1136,8 @@ sum(
     clean_data$tempo == 0
 )
 
-#No zero tempo values remain after the completed 02c validation rule.
+#Zero tempo values are recorded for investigation
+#but are not automatically changed to NA
 
 
 #-----------------------------------------------------
@@ -1215,17 +1153,15 @@ sum(
     )
 )
 
-#Use the completed 02c loudness rule rather than the older preparation rule.
-invalid_loudness = !is.na(clean_data$loudness) &
-  (clean_data$loudness < -60 | clean_data$loudness > 0)
-clean_data$loudness[invalid_loudness] = NA
+#Loudness values outside -60 to 0 dB are recorded for
+#investigation but are not automatically treated as invalid
 
 
 #-----------------------------------------------------
 #Create one validation summary
 
 invalid_values_summary = data.frame(
-
+  
   variable = c(
     "popularity",
     "duration_ms",
@@ -1236,13 +1172,12 @@ invalid_values_summary = data.frame(
     "instrumentalness",
     "liveness",
     "valence",
-    "loudness",
     "tempo",
     "key",
     "mode",
     "time_signature"
   ),
-
+  
   invalid_count = c(
     sum(invalid_popularity),
     sum(invalid_duration),
@@ -1253,7 +1188,6 @@ invalid_values_summary = data.frame(
     sum(invalid_instrumentalness),
     sum(invalid_liveness),
     sum(invalid_valence),
-    sum(invalid_loudness),
     sum(invalid_tempo),
     sum(invalid_key),
     sum(invalid_mode),
@@ -1278,431 +1212,170 @@ new_missing_from_validation
 
 
 
+# ============================================================
+# 2.2 DATA CLEANING AND PREPROCESSING
+# MISSING-VALUE TREATMENT
+# ============================================================
 
-# Preserve observed values for later modelling and for checking imputation.
-prepared_before_imputation = clean_data
-for (column in c(numeric_columns, "explicit")) {
-  if (all(is.na(clean_data[[column]][!is.na(clean_data$popularity)]))) {
-    stop(paste("No observed values available for missing-value treatment:", column))
-  }
-}
+#The missing-value treatment has not yet been implemented
+#in the existing project files.
 
-#Check the dataset before handling missing values
+#The final missing-value treatment is still pending.
+#No treatment is applied until the group approves the method.
+
+
+#-----------------------------------------------------
+#Check missing values after validation
+
+missing_before_treatment =
+  colSums(is.na(clean_data))
+
+missing_before_treatment
+
+missing_percentage_before_treatment =
+  (
+    colSums(is.na(clean_data)) /
+      nrow(clean_data)
+  ) * 100
+
+missing_percentage_before_treatment
+
+
+#-----------------------------------------------------
+#Target-variable rule
+
+#Records with missing popularity should normally be removed
+#because popularity is the main target variable and cannot be
+#used for analysis or prediction when it is missing.
+
+
+#-----------------------------------------------------
+#Numeric predictor rule
+
+#The group must approve whether each analysis will use:
+#
+#1. Complete cases
+#2. Median imputation
+#3. Another justified method
+#
+#Do not automatically apply one method to all variables.
+
+
+#-----------------------------------------------------
+#Categorical predictor rule
+
+#The group must decide whether missing categories should:
+#
+#1. Be removed from a specific analysis
+#2. Be recorded as an Unknown category
+#3. Be handled using another justified method
+
+
+#-----------------------------------------------------
+#Important modelling note
+
+#Any imputation used specifically for prediction modelling
+#should later be calculated from the training data only.
+#The testing data must not be used to calculate imputation
+#values because that would cause data leakage.
+
+
+
+# ============================================================
+# CURRENT DATA PREPARATION VERIFICATION
+# ============================================================
+
+#This is the current final state before the missing-value
+#treatment decisions in the section above are implemented.
 
 nrow(clean_data)
 ncol(clean_data)
-
-colSums(is.na(clean_data))
-sum(is.na(clean_data))
-
-#There are 113579 rows and 20 columns; missing counts are printed above
-#before handling the remaining missing values
-
-#-----------------------------------------------------
-#Remove rows with missing popularity
-
-sum(is.na(clean_data$popularity))
-#There are 268 missing popularity values
-
-rows_before_popularity = nrow(clean_data)
-
-clean_data =
-  clean_data[!is.na(clean_data$popularity), ]
-
-rows_after_popularity = nrow(clean_data)
-
-popularity_rows_removed =
-  rows_before_popularity - rows_after_popularity
-
-popularity_rows_removed
-#268 rows with missing popularity are removed
-
-nrow(clean_data)
-#113311 rows remain
-
-#Popularity is the main target variable for the assignment
-#Missing popularity values are not imputed because this would
-#create artificial target values for the later analysis and prediction
-
-#-----------------------------------------------------
-#Check the remaining missing values
-
-colSums(is.na(clean_data))
-sum(is.na(clean_data))
-
-#Remaining missing values in predictors and descriptive variables are
-#counted above; comments must not substitute for the current data audit.
-
-#-----------------------------------------------------
-#Handle missing descriptive text values
-
-clean_data$artists[
-  is.na(clean_data$artists)
-] = "Unknown"
-
-clean_data$album_name[
-  is.na(clean_data$album_name)
-] = "Unknown"
-
-clean_data$track_name[
-  is.na(clean_data$track_name)
-] = "Unknown"
-
-sum(is.na(clean_data$artists))
-sum(is.na(clean_data$album_name))
-sum(is.na(clean_data$track_name))
-
-#Missing artist, album and track names are replaced with Unknown
-#because replacing them with another existing name would create
-#incorrect descriptive information
-
-#-----------------------------------------------------
-#Handle missing duration values using median
-
-duration_median =
-  as.integer(median(clean_data$duration_ms, na.rm = TRUE))
-
-duration_median
-
-clean_data$duration_ms[
-  is.na(clean_data$duration_ms)
-] = duration_median
-
-sum(is.na(clean_data$duration_ms))
-
-#Median is used because duration is numerical and the median
-#is less affected by extreme values
-
-#-----------------------------------------------------
-#Handle missing continuous audio values using median
-
-danceability_median =
-  median(clean_data$danceability, na.rm = TRUE)
-
-clean_data$danceability[
-  is.na(clean_data$danceability)
-] = danceability_median
-
-
-energy_median =
-  median(clean_data$energy, na.rm = TRUE)
-
-clean_data$energy[
-  is.na(clean_data$energy)
-] = energy_median
-
-
-loudness_median =
-  median(clean_data$loudness, na.rm = TRUE)
-
-clean_data$loudness[
-  is.na(clean_data$loudness)
-] = loudness_median
-
-
-speechiness_median =
-  median(clean_data$speechiness, na.rm = TRUE)
-
-clean_data$speechiness[
-  is.na(clean_data$speechiness)
-] = speechiness_median
-
-
-acousticness_median =
-  median(clean_data$acousticness, na.rm = TRUE)
-
-clean_data$acousticness[
-  is.na(clean_data$acousticness)
-] = acousticness_median
-
-
-instrumentalness_median =
-  median(clean_data$instrumentalness, na.rm = TRUE)
-
-clean_data$instrumentalness[
-  is.na(clean_data$instrumentalness)
-] = instrumentalness_median
-
-
-liveness_median =
-  median(clean_data$liveness, na.rm = TRUE)
-
-clean_data$liveness[
-  is.na(clean_data$liveness)
-] = liveness_median
-
-
-valence_median =
-  median(clean_data$valence, na.rm = TRUE)
-
-clean_data$valence[
-  is.na(clean_data$valence)
-] = valence_median
-
-
-tempo_median =
-  median(clean_data$tempo, na.rm = TRUE)
-
-clean_data$tempo[
-  is.na(clean_data$tempo)
-] = tempo_median
-
-#Median is used for the continuous numerical audio variables
-#because it is less affected by extreme values than the mean
-
-#-----------------------------------------------------
-#Check the median values used
-
-duration_median
-danceability_median
-energy_median
-loudness_median
-speechiness_median
-acousticness_median
-instrumentalness_median
-liveness_median
-valence_median
-tempo_median
-
-#Expected median values are approximately:
-#duration_ms = 213000
-#danceability = 0.580
-#energy = 0.685
-#loudness = -6.999
-#speechiness = 0.0489
-#acousticness = 0.168
-#instrumentalness = 0.0000413
-#liveness = 0.132
-#valence = 0.464
-#tempo = 122.020
-
-#-----------------------------------------------------
-#Handle missing key values using mode
-
-key_mode =
-  as.integer(names(which.max(table(clean_data$key))))
-
-key_mode
-
-clean_data$key[
-  is.na(clean_data$key)
-] = key_mode
-
-sum(is.na(clean_data$key))
-
-#Key is a discrete variable so the most frequently occurring
-#valid key value is used for missing records
-
-#-----------------------------------------------------
-#Handle missing mode values using mode
-
-mode_mode =
-  as.integer(names(which.max(table(clean_data$mode))))
-
-mode_mode
-
-clean_data$mode[
-  is.na(clean_data$mode)
-] = mode_mode
-
-sum(is.na(clean_data$mode))
-
-#Mode is a categorical discrete variable containing 0 and 1
-#so its most frequent value is used for missing records
-
-#-----------------------------------------------------
-#Handle missing time_signature values using mode
-
-time_signature_mode =
-  as.integer(
-    names(which.max(table(clean_data$time_signature)))
-  )
-
-time_signature_mode
-
-clean_data$time_signature[
-  is.na(clean_data$time_signature)
-] = time_signature_mode
-
-sum(is.na(clean_data$time_signature))
-
-#Time signature is a discrete variable so its most frequently
-#occurring valid value is used for missing records
-
-#-----------------------------------------------------
-#Handle missing explicit values using mode
-
-explicit_mode =
-  names(which.max(table(clean_data$explicit)))
-
-explicit_mode
-
-clean_data$explicit[
-  is.na(clean_data$explicit)
-] = as.logical(explicit_mode)
-
-sum(is.na(clean_data$explicit))
-
-#Explicit is a boolean variable so the most frequently occurring
-#TRUE or FALSE value is used for the missing records
-
-#-----------------------------------------------------
-#Check the mode values used
-
-key_mode
-mode_mode
-time_signature_mode
-explicit_mode
-
-#Expected mode values:
-#key = 7
-#mode = 1
-#time_signature = 4
-#explicit = FALSE
-
-#-----------------------------------------------------
-#Check missing values after treatment
-
-colSums(is.na(clean_data))
-
-sum(is.na(clean_data))
-
-sum(rowSums(is.na(clean_data)) > 0)
-
-#The result should be 0, confirming that no missing values remain
-
-#-----------------------------------------------------
-#Check duplicates after missing value treatment
-
-sum(duplicated(clean_data))
-
-#Missing value replacement may cause previously different records
-#to become identical, so exact duplicates are checked again
-
-rows_before_final_duplicates = nrow(clean_data)
-
-clean_data = clean_data %>% distinct()
-
-rows_after_final_duplicates = nrow(clean_data)
-
-final_duplicates_removed =
-  rows_before_final_duplicates -
-  rows_after_final_duplicates
-
-final_duplicates_removed
-
-#6 exact duplicate records are expected to be created after
-#missing value treatment and are removed before export
-
-sum(duplicated(clean_data))
-#The result should be 0
-
-#-----------------------------------------------------
-#Final dataset check
-
-nrow(clean_data)
-ncol(clean_data)
-
-names(clean_data)
-
 str(clean_data)
 
-colSums(is.na(clean_data))
-
 sum(is.na(clean_data))
-
 sum(duplicated(clean_data))
 
-#The final dataset should contain 113305 rows and 20 columns
-#with no missing values and no exact duplicate records
-
-#-----------------------------------------------------
-#Export the cleaned dataset
-
-# Enforce the prepared-data contract before exporting or exploring.
-stopifnot(
-  identical(names(clean_data), required_columns),
-  nrow(clean_data) > 1,
-  !anyNA(clean_data),
-  !anyDuplicated(clean_data),
-  is.logical(clean_data$explicit),
-  all(clean_data$popularity >= 0 & clean_data$popularity <= 100),
-  all(clean_data$duration_ms > 0),
-  all(clean_data$key %in% c(-1, 0:11)),
-  all(clean_data$mode %in% c(0, 1)),
-  all(clean_data$time_signature %in% 3:7),
-  all(clean_data$tempo > 0),
-  all(clean_data$loudness >= -60 & clean_data$loudness <= 0)
-)
-score_columns = c("danceability", "energy", "speechiness", "acousticness",
-  "instrumentalness", "liveness", "valence")
-for (column in numeric_columns) {
-  stopifnot(all(is.finite(clean_data[[column]])))
-}
-for (column in score_columns) {
-  stopifnot(all(clean_data[[column]] >= 0 & clean_data[[column]] <= 1))
-}
-for (column in integer_columns) stopifnot(is.integer(clean_data[[column]]))
-stopifnot(nrow(raw_data) - nrow(clean_data) ==
-  rows_removed_duplicates + genre_duplicates_removed +
-  popularity_rows_removed + final_duplicates_removed)
-
-
-write.csv(
-  clean_data,
-  file.path(output_dir, "spotify_tracks_clean.csv"),
-  row.names = FALSE
+length(
+  unique(clean_data$track_genre)
 )
 
-#The final cleaned dataset is exported without an additional
-#row index and will be used for exploration and objective analysis
 
-#-----------------------------------------------------
-#Stage 02d Summary
+# ============================================================
+# CURRENT DATA PREPARATION SUMMARY
+# ============================================================
 
-cat("\n--- MISSING VALUE AND EXPORT SUMMARY ---\n")
+cat("\n--- DATA PREPARATION SUMMARY ---\n")
 
 cat(
-  "Popularity rows removed:",
-  popularity_rows_removed,
+  "Original rows:",
+  original_rows,
   "\n"
 )
 
 cat(
-  "Duplicates removed after missing value treatment:",
-  final_duplicates_removed,
-  "\n"
-)
-
-cat(
-  "Remaining missing values:",
-  sum(is.na(clean_data)),
-  "\n"
-)
-
-cat(
-  "Final duplicate records:",
-  sum(duplicated(clean_data)),
-  "\n"
-)
-
-cat(
-  "Final rows:",
+  "Current rows:",
   nrow(clean_data),
   "\n"
 )
 
 cat(
-  "Final columns:",
+  "Rows removed so far:",
+  original_rows - nrow(clean_data),
+  "\n"
+)
+
+cat(
+  "Original columns:",
+  original_columns,
+  "\n"
+)
+
+cat(
+  "Current columns:",
   ncol(clean_data),
   "\n"
 )
 
 cat(
-  "\nStage 02d completed: missing values handled and cleaned dataset exported.\n"
+  "Original missing values:",
+  original_missing,
+  "\n"
 )
 
-# STAGE 3: GENERAL EXPLORATION
+cat(
+  "Missing values after validation:",
+  sum(is.na(clean_data)),
+  "\n"
+)
+
+cat(
+  "Exact duplicates remaining:",
+  sum(duplicated(clean_data)),
+  "\n"
+)
+
+cat(
+  "Genre categories:",
+  length(unique(clean_data$track_genre)),
+  "\n"
+)
+
+cat(
+  "\nMissing-value treatment and final export are still pending.\n"
+)
+
+
+# ============================================================
+# PENDING DATA PREPARATION WORK
+# ============================================================
+
+#Do not export the final cleaned dataset yet.
+#The missing-value treatment must be approved and implemented first.
+
+#Planned output:
+#data/processed/spotify_tracks_clean.csv
+
+# ============================================================
 # 3.0 GENERAL DATA EXPLORATION
 # ============================================================
 
@@ -1712,7 +1385,6 @@ library(ggplot2)
 
 exploration_data = clean_data
 
-
 #-----------------------------------------------------
 #Check the dataset before exploration
 
@@ -1720,17 +1392,16 @@ nrow(exploration_data)
 ncol(exploration_data)
 
 names(exploration_data)
-
 str(exploration_data)
-
 head(exploration_data)
 
 sum(is.na(exploration_data))
 sum(duplicated(exploration_data))
 
-#The dataset has already completed the cleaning and validation
-#steps performed in the Data Preparation section
-
+#The dataset has completed the cleaning, transformation
+#and validation steps performed in Data Preparation.
+#Missing values are handled during exploration using na.rm
+#where required because final missing-value treatment is pending.
 
 #-----------------------------------------------------
 #General dataset profile
@@ -1745,12 +1416,20 @@ unique_tracks =
 
 unique_artist_entries =
   length(
-    unique(exploration_data$artists)
+    unique(
+      exploration_data$artists[
+        !is.na(exploration_data$artists)
+      ]
+    )
   )
 
 unique_albums =
   length(
-    unique(exploration_data$album_name)
+    unique(
+      exploration_data$album_name[
+        !is.na(exploration_data$album_name)
+      ]
+    )
   )
 
 unique_genres =
@@ -1758,16 +1437,13 @@ unique_genres =
     unique(exploration_data$track_genre)
   )
 
-
 total_records
 unique_tracks
 unique_artist_entries
 unique_albums
 unique_genres
 
-
 dataset_profile = data.frame(
-
   Measurement = c(
     "Total records",
     "Unique track IDs",
@@ -1775,7 +1451,6 @@ dataset_profile = data.frame(
     "Unique albums",
     "Unique genres"
   ),
-
   Value = c(
     total_records,
     unique_tracks,
@@ -1786,7 +1461,6 @@ dataset_profile = data.frame(
 )
 
 dataset_profile
-
 
 #-----------------------------------------------------
 #Check repeated track IDs
@@ -1808,7 +1482,6 @@ rows_with_repeated_track_ids =
       names(repeated_track_ids)
   )
 
-
 number_repeated_track_ids
 rows_with_repeated_track_ids
 
@@ -1816,12 +1489,10 @@ rows_with_repeated_track_ids
 #They are not removed because repeated IDs do not automatically
 #represent exact duplicate records.
 
-
 #-----------------------------------------------------
 #General summary of all variables
 
 summary(exploration_data)
-
 
 #-----------------------------------------------------
 #Numerical variables used in general exploration
@@ -1840,12 +1511,10 @@ numeric_variables = c(
   "tempo"
 )
 
-
 #-----------------------------------------------------
 #Numerical summary statistics
 
 numeric_summary = data.frame(
-
   Variable =
     numeric_variables,
 
@@ -1909,13 +1578,10 @@ numeric_summary = data.frame(
 
 numeric_summary
 
-
 #-----------------------------------------------------
 #Popularity summary
 
-summary(
-  exploration_data$popularity
-)
+summary(exploration_data$popularity)
 
 popularity_mean =
   mean(
@@ -1947,13 +1613,11 @@ popularity_max =
     na.rm = TRUE
   )
 
-
 popularity_mean
 popularity_median
 popularity_sd
 popularity_min
 popularity_max
-
 
 #-----------------------------------------------------
 #Percentage of valid tracks with popularity = 0
@@ -1966,24 +1630,20 @@ zero_popularity_count =
 
 valid_popularity_count =
   sum(
-    !is.na(
-      exploration_data$popularity
-    )
+    !is.na(exploration_data$popularity)
   )
 
 zero_popularity_percentage =
   zero_popularity_count /
   valid_popularity_count * 100
 
-
 zero_popularity_count
 zero_popularity_percentage
-
 
 #-----------------------------------------------------
 #Popularity histogram
 
-exploration_plot = ggplot(
+ggplot(
   exploration_data,
   aes(x = popularity)
 ) +
@@ -1999,19 +1659,10 @@ exploration_plot = ggplot(
     y = "Frequency"
   )
 
-# Save the plot even when this script runs using source() or Rscript.
-ggsave(
-  file.path(output_dir, "plots", "exploration_01.png"),
-  plot = exploration_plot, width = 8, height = 5, dpi = 120
-)
-if (interactive()) print(exploration_plot)
-
-
-
 #-----------------------------------------------------
 #Popularity boxplot
 
-exploration_plot = ggplot(
+ggplot(
   exploration_data,
   aes(y = popularity)
 ) +
@@ -2021,22 +1672,14 @@ exploration_plot = ggplot(
   ) +
   labs(
     title = "Boxplot of Track Popularity",
+    x = "",
     y = "Popularity Score"
   )
-
-# Save the plot even when this script runs using source() or Rscript.
-ggsave(
-  file.path(output_dir, "plots", "exploration_02.png"),
-  plot = exploration_plot, width = 8, height = 5, dpi = 120
-)
-if (interactive()) print(exploration_plot)
-
-
 
 #-----------------------------------------------------
 #Duration distribution
 
-exploration_plot = ggplot(
+ggplot(
   exploration_data,
   aes(x = duration_ms)
 ) +
@@ -2052,19 +1695,10 @@ exploration_plot = ggplot(
     y = "Frequency"
   )
 
-# Save the plot even when this script runs using source() or Rscript.
-ggsave(
-  file.path(output_dir, "plots", "exploration_03.png"),
-  plot = exploration_plot, width = 8, height = 5, dpi = 120
-)
-if (interactive()) print(exploration_plot)
-
-
-
 #-----------------------------------------------------
 #Danceability distribution
 
-exploration_plot = ggplot(
+ggplot(
   exploration_data,
   aes(x = danceability)
 ) +
@@ -2080,19 +1714,10 @@ exploration_plot = ggplot(
     y = "Frequency"
   )
 
-# Save the plot even when this script runs using source() or Rscript.
-ggsave(
-  file.path(output_dir, "plots", "exploration_04.png"),
-  plot = exploration_plot, width = 8, height = 5, dpi = 120
-)
-if (interactive()) print(exploration_plot)
-
-
-
 #-----------------------------------------------------
 #Energy distribution
 
-exploration_plot = ggplot(
+ggplot(
   exploration_data,
   aes(x = energy)
 ) +
@@ -2108,19 +1733,10 @@ exploration_plot = ggplot(
     y = "Frequency"
   )
 
-# Save the plot even when this script runs using source() or Rscript.
-ggsave(
-  file.path(output_dir, "plots", "exploration_05.png"),
-  plot = exploration_plot, width = 8, height = 5, dpi = 120
-)
-if (interactive()) print(exploration_plot)
-
-
-
 #-----------------------------------------------------
 #Loudness distribution
 
-exploration_plot = ggplot(
+ggplot(
   exploration_data,
   aes(x = loudness)
 ) +
@@ -2136,19 +1752,10 @@ exploration_plot = ggplot(
     y = "Frequency"
   )
 
-# Save the plot even when this script runs using source() or Rscript.
-ggsave(
-  file.path(output_dir, "plots", "exploration_06.png"),
-  plot = exploration_plot, width = 8, height = 5, dpi = 120
-)
-if (interactive()) print(exploration_plot)
-
-
-
 #-----------------------------------------------------
 #Tempo distribution
 
-exploration_plot = ggplot(
+ggplot(
   exploration_data,
   aes(x = tempo)
 ) +
@@ -2164,19 +1771,10 @@ exploration_plot = ggplot(
     y = "Frequency"
   )
 
-# Save the plot even when this script runs using source() or Rscript.
-ggsave(
-  file.path(output_dir, "plots", "exploration_07.png"),
-  plot = exploration_plot, width = 8, height = 5, dpi = 120
-)
-if (interactive()) print(exploration_plot)
-
-
-
 #-----------------------------------------------------
 #Acousticness distribution
 
-exploration_plot = ggplot(
+ggplot(
   exploration_data,
   aes(x = acousticness)
 ) +
@@ -2192,19 +1790,10 @@ exploration_plot = ggplot(
     y = "Frequency"
   )
 
-# Save the plot even when this script runs using source() or Rscript.
-ggsave(
-  file.path(output_dir, "plots", "exploration_08.png"),
-  plot = exploration_plot, width = 8, height = 5, dpi = 120
-)
-if (interactive()) print(exploration_plot)
-
-
-
 #-----------------------------------------------------
 #Instrumentalness distribution
 
-exploration_plot = ggplot(
+ggplot(
   exploration_data,
   aes(x = instrumentalness)
 ) +
@@ -2220,15 +1809,6 @@ exploration_plot = ggplot(
     y = "Frequency"
   )
 
-# Save the plot even when this script runs using source() or Rscript.
-ggsave(
-  file.path(output_dir, "plots", "exploration_09.png"),
-  plot = exploration_plot, width = 8, height = 5, dpi = 120
-)
-if (interactive()) print(exploration_plot)
-
-
-
 #-----------------------------------------------------
 #Explicit track distribution
 
@@ -2239,11 +1819,9 @@ explicit_counts =
   )
 
 explicit_counts
+prop.table(explicit_counts) * 100
 
-explicit_counts / sum(explicit_counts) * 100
-
-
-exploration_plot = ggplot(
+ggplot(
   exploration_data,
   aes(x = factor(explicit))
 ) +
@@ -2257,15 +1835,6 @@ exploration_plot = ggplot(
     y = "Number of Records"
   )
 
-# Save the plot even when this script runs using source() or Rscript.
-ggsave(
-  file.path(output_dir, "plots", "exploration_10.png"),
-  plot = exploration_plot, width = 8, height = 5, dpi = 120
-)
-if (interactive()) print(exploration_plot)
-
-
-
 #-----------------------------------------------------
 #Mode distribution
 
@@ -2276,12 +1845,10 @@ mode_counts =
   )
 
 mode_counts
-
-mode_counts / sum(mode_counts) * 100
+prop.table(mode_counts) * 100
 
 #0 = Minor
 #1 = Major
-
 
 #-----------------------------------------------------
 #Key distribution
@@ -2294,8 +1861,7 @@ key_counts =
 
 key_counts
 
-
-exploration_plot = ggplot(
+ggplot(
   exploration_data,
   aes(x = factor(key))
 ) +
@@ -2309,15 +1875,6 @@ exploration_plot = ggplot(
     y = "Number of Records"
   )
 
-# Save the plot even when this script runs using source() or Rscript.
-ggsave(
-  file.path(output_dir, "plots", "exploration_11.png"),
-  plot = exploration_plot, width = 8, height = 5, dpi = 120
-)
-if (interactive()) print(exploration_plot)
-
-
-
 #-----------------------------------------------------
 #Time signature distribution
 
@@ -2328,15 +1885,11 @@ time_signature_counts =
   )
 
 time_signature_counts
+prop.table(time_signature_counts) * 100
 
-time_signature_counts / sum(time_signature_counts) * 100
-
-
-exploration_plot = ggplot(
+ggplot(
   exploration_data,
-  aes(
-    x = factor(time_signature)
-  )
+  aes(x = factor(time_signature))
 ) +
   geom_bar(
     fill = "lightblue",
@@ -2348,31 +1901,55 @@ exploration_plot = ggplot(
     y = "Number of Records"
   )
 
-# Save the plot even when this script runs using source() or Rscript.
-ggsave(
-  file.path(output_dir, "plots", "exploration_12.png"),
-  plot = exploration_plot, width = 8, height = 5, dpi = 120
-)
-if (interactive()) print(exploration_plot)
-
-
-
 #-----------------------------------------------------
 #Genre distribution
 
 genre_counts =
   sort(
-    table(
-      exploration_data$track_genre
-    ),
+    table(exploration_data$track_genre),
     decreasing = TRUE
   )
 
 genre_counts
-
 length(genre_counts)
 
+#-----------------------------------------------------
+#Top 10 genres
 
+top_10_genres =
+  head(
+    genre_counts,
+    10
+  )
+
+top_10_genres
+
+top_10_genres_df = data.frame(
+  Genre =
+    names(top_10_genres),
+
+  Count =
+    as.numeric(top_10_genres)
+)
+
+top_10_genres_df
+
+ggplot(
+  top_10_genres_df,
+  aes(
+    x = reorder(Genre, Count),
+    y = Count
+  )
+) +
+  geom_col(
+    fill = "steelblue"
+  ) +
+  coord_flip() +
+  labs(
+    title = "Top 10 Genres by Number of Records",
+    x = "Genre",
+    y = "Number of Records"
+  )
 
 #-----------------------------------------------------
 #Basic popularity comparison by explicit status
@@ -2381,9 +1958,13 @@ popularity_by_explicit =
   exploration_data %>%
   group_by(explicit) %>%
   summarise(
-
     Count =
       n(),
+
+    Valid_Popularity =
+      sum(
+        !is.na(popularity)
+      ),
 
     Mean_Popularity =
       mean(
@@ -2400,8 +1981,7 @@ popularity_by_explicit =
 
 popularity_by_explicit
 
-
-exploration_plot = ggplot(
+ggplot(
   exploration_data,
   aes(
     x = factor(explicit),
@@ -2418,15 +1998,6 @@ exploration_plot = ggplot(
     y = "Popularity Score"
   )
 
-# Save the plot even when this script runs using source() or Rscript.
-ggsave(
-  file.path(output_dir, "plots", "exploration_13.png"),
-  plot = exploration_plot, width = 8, height = 5, dpi = 120
-)
-if (interactive()) print(exploration_plot)
-
-
-
 #-----------------------------------------------------
 #Basic popularity comparison by mode
 
@@ -2434,9 +2005,13 @@ popularity_by_mode =
   exploration_data %>%
   group_by(mode) %>%
   summarise(
-
     Count =
       n(),
+
+    Valid_Popularity =
+      sum(
+        !is.na(popularity)
+      ),
 
     Mean_Popularity =
       mean(
@@ -2452,7 +2027,6 @@ popularity_by_mode =
   )
 
 popularity_by_mode
-
 
 #-----------------------------------------------------
 #Basic correlation exploration
@@ -2471,27 +2045,23 @@ correlation_variables = c(
   "tempo"
 )
 
-
 correlation_data =
   exploration_data[
     correlation_variables
   ]
 
-
 correlation_matrix =
   cor(
     correlation_data,
-    use = "complete.obs"
+    use = "pairwise.complete.obs"
   )
 
 correlation_matrix
-
 
 #-----------------------------------------------------
 #Correlation of each numerical variable with popularity
 
 popularity_correlations = data.frame(
-
   Variable =
     correlation_variables[
       correlation_variables !=
@@ -2507,7 +2077,6 @@ popularity_correlations = data.frame(
       ]
     )
 )
-
 
 popularity_correlations =
   popularity_correlations[
@@ -2525,48 +2094,62 @@ popularity_correlations
 #Detailed statistical analysis is completed later under
 #the individual objectives.
 
-
 #-----------------------------------------------------
-#Output folders were created during setup.
+#Create output folders
 
+if (!dir.exists("outputs")) {
+  dir.create("outputs")
+}
+
+if (!dir.exists("outputs/tables")) {
+  dir.create("outputs/tables")
+}
+
+if (!dir.exists("outputs/plots")) {
+  dir.create("outputs/plots")
+}
 
 #-----------------------------------------------------
 #Export useful exploration tables
 
 write.csv(
   dataset_profile,
-  file.path(output_dir, "tables", "general_dataset_profile.csv"),
+  "outputs/tables/general_dataset_profile.csv",
   row.names = FALSE
 )
 
 write.csv(
   numeric_summary,
-  file.path(output_dir, "tables", "general_numeric_summary.csv"),
+  "outputs/tables/general_numeric_summary.csv",
   row.names = FALSE
 )
 
+write.csv(
+  top_10_genres_df,
+  "outputs/tables/top_10_genres.csv",
+  row.names = FALSE
+)
 
 write.csv(
   popularity_by_explicit,
-  file.path(output_dir, "tables", "popularity_by_explicit.csv"),
+  "outputs/tables/popularity_by_explicit.csv",
   row.names = FALSE
 )
 
 write.csv(
   popularity_by_mode,
-  file.path(output_dir, "tables", "popularity_by_mode.csv"),
+  "outputs/tables/popularity_by_mode.csv",
   row.names = FALSE
 )
 
 write.csv(
   popularity_correlations,
-  file.path(output_dir, "tables", "popularity_correlations.csv"),
+  "outputs/tables/popularity_correlations.csv",
   row.names = FALSE
 )
 
-
 # ============================================================
-# GENERAL EXPLORATION SUMMARY
+# CURRENT GENERAL EXPLORATION SUMMARY
 # ============================================================
 
 cat(
@@ -2620,15 +2203,7 @@ cat(
   popularity_median,
   "\n"
 )
-# Correlation requires observed variation in every included variable.
-if (any(!is.finite(correlation_matrix))) {
-  stop("Correlation contains undefined values; check constant numeric variables.")
-}
-stopifnot(identical(exploration_data, clean_data))
-write.csv(invalid_values_summary,
-  file.path(output_dir, "tables", "invalid_values_summary.csv"), row.names = FALSE)
-write.csv(data.frame(Variable = names(prepared_before_imputation),
-  Missing_Before_Treatment = colSums(is.na(prepared_before_imputation))),
-  file.path(output_dir, "tables", "missing_before_treatment.csv"), row.names = FALSE)
-exploration_data$duration_min = exploration_data$duration_ms / 60000
-cat("\nStages 1-3 completed and data checks passed. Outputs:", output_dir, "\n")
+
+cat(
+  "\nGeneral exploration completed. Individual objective analysis follows.\n"
+)
