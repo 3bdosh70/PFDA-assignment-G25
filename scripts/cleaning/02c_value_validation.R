@@ -304,19 +304,19 @@ clean_data$tempo[invalid_tempo] = NA
 
 summary(clean_data$loudness)
 
-sum(
-  !is.na(clean_data$loudness) &
-    (clean_data$loudness < -60 |
-       clean_data$loudness > 0)
-)
-
 invalid_loudness =
   !is.na(clean_data$loudness) &
-  (clean_data$loudness < -60 |
-     clean_data$loudness > 0)
+  (
+    clean_data$loudness < -60 |
+      clean_data$loudness > 0
+  )
 
-# Loudness values typically range between -60 and 0 dB
-# Values outside this reasonable range are treated as invalid
+sum(invalid_loudness)
+
+# Spotify loudness is measured in decibels (dB),
+# where normal values are negative.
+# Values below -60 dB or above 0 dB are treated
+# as invalid because they are outside a realistic range.
 
 clean_data[
   invalid_loudness,
@@ -324,7 +324,6 @@ clean_data[
 ]
 
 clean_data$loudness[invalid_loudness] = NA
-
 
 #-----------------------------------------------------
 # Create invalid value summary
