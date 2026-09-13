@@ -1,24 +1,19 @@
 library(dplyr)
 library(ggplot2)
 
-
 #=====================================================
 # OBJECTIVE 2
-# Investigate the Relationship Between
-# Track Duration, Genre, Explicit Status and Popularity
+# Track Duration, Explicit Status, Genre and Popularity
 #=====================================================
-
-
 
 #=====================================================
 # ANALYSIS 2-1
 # Track Duration, Explicit Status and Popularity
 #=====================================================
 
-
 #-----------------------------------------------------
 # STEP 1
-# Create Track Duration Groups
+# Create Duration Groups
 #-----------------------------------------------------
 
 exploration_data$duration_group <- cut(
@@ -36,15 +31,13 @@ exploration_data$duration_group <- cut(
 )
 
 
-# Check distribution of duration groups
+# Check number of tracks in each duration group
 
 table(exploration_data$duration_group)
 
-
-
 #-----------------------------------------------------
 # STEP 2
-# Compare Popularity Between Duration Groups
+# Popularity by Duration Group
 #-----------------------------------------------------
 
 duration_popularity <- exploration_data %>%
@@ -53,12 +46,15 @@ duration_popularity <- exploration_data %>%
     track_count = n(),
     mean_popularity = mean(popularity, na.rm = TRUE),
     median_popularity = median(popularity, na.rm = TRUE),
+    sd_popularity = sd(popularity, na.rm = TRUE),
     .groups = "drop"
-  ) %>%
+  )
+
+
+# Rank duration groups
+
+duration_popularity %>%
   arrange(desc(median_popularity))
-
-
-duration_popularity
 
 
 
@@ -92,7 +88,7 @@ ggplot(
 
 #-----------------------------------------------------
 # STEP 4
-# Compare Duration and Explicit Status
+# Duration + Explicit Status and Popularity
 #-----------------------------------------------------
 
 duration_explicit_popularity <- exploration_data %>%
@@ -104,6 +100,7 @@ duration_explicit_popularity <- exploration_data %>%
     track_count = n(),
     mean_popularity = mean(popularity, na.rm = TRUE),
     median_popularity = median(popularity, na.rm = TRUE),
+    sd_popularity = sd(popularity, na.rm = TRUE),
     .groups = "drop"
   )
 
@@ -112,9 +109,19 @@ duration_explicit_popularity
 
 
 
+# Rank combinations
+
+duration_explicit_popularity %>%
+  arrange(
+    desc(median_popularity),
+    desc(mean_popularity)
+  )
+
+
+
 #-----------------------------------------------------
 # STEP 5
-# Visualise Explicit Status Difference
+# Visualise Duration and Explicit Status
 #-----------------------------------------------------
 
 ggplot(
@@ -142,44 +149,43 @@ ggplot(
     )
   )
 
-
-
-
-
-
 #=====================================================
 # ANALYSIS 2-2
-# Genre and Duration Relationship with Popularity
+# Genre and Popularity Within the 3-5 Minute Range
 #=====================================================
-
 
 #-----------------------------------------------------
 # STEP 1
-# Filter Tracks Within Common Commercial Duration
-# (3-5 Minutes)
+# Overall Popularity by Genre
 #-----------------------------------------------------
 
-genre_duration_data <- exploration_data %>%
+genre_popularity <- exploration_data %>%
+  group_by(track_genre) %>%
+  summarise(
+    track_count = n(),
+    mean_popularity = mean(popularity, na.rm = TRUE),
+    median_popularity = median(popularity, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  arrange(desc(median_popularity))
+
+
+# View top genres
+
+head(genre_popularity, 10)
+#-----------------------------------------------------
+# STEP 2
+# Focus on 3-5 Minute Tracks
+# Based on Finding from Analysis 2-1
+#-----------------------------------------------------
+
+genre_3_5_popularity <- exploration_data %>%
   filter(
     duration_group %in% c(
       "Typical (3-4 min)",
       "Moderately long (4-5 min)"
     )
-  )
-
-
-# Number of tracks used after filtering
-
-nrow(genre_duration_data)
-
-
-
-#-----------------------------------------------------
-# STEP 2
-# Calculate Popularity by Genre
-#-----------------------------------------------------
-
-genre_3_5_popularity <- genre_duration_data %>%
+  ) %>%
   group_by(track_genre) %>%
   summarise(
     track_count = n(),
@@ -188,35 +194,59 @@ genre_3_5_popularity <- genre_duration_data %>%
     .groups = "drop"
   ) %>%
   arrange(
-    desc(median_popularity)
+    desc(median_popularity),
+    desc(mean_popularity)
   )
 
 
-genre_3_5_popularity
+# View highest popularity genres within 3-5 minutes
 
-
+head(genre_3_5_popularity, 10)
 
 #-----------------------------------------------------
 # STEP 3
-# Select Top 10 Genres
+# Select Top 10 Genres Within 3-5 Minutes
 #-----------------------------------------------------
 
-top_10_genres <- genre_3_5_popularity %>%
+top_10_genre_3_5 <- genre_3_5_popularity %>%
   slice_head(n = 10)
 
 
-top_10_genres
-
-
+top_10_genre_3_5
 
 #-----------------------------------------------------
 # STEP 4
+# Visualise Top Genres Within 3-5 Minutes
+#-----------------------------------------------------
+
+ggplot(
+  top_10_genre_3_5,
+  aes(
+    x = reorder(track_genre, median_popularity),
+    y = median_popularity
+  )
+) +
+  geom_col() +
+  coord_flip() +
+  labs(
+    title = "Top Genres Among 3-5 Minute Tracks",
+    x = "Track Genre",
+    y = "Median Popularity"
+  ) +
+  theme_minimal()
+
+#-----------------------------------------------------
+# STEP 5
 # Compare Genre and Duration
 #-----------------------------------------------------
 
-genre_duration_summary <- genre_duration_data %>%
+genre_duration_3_5 <- exploration_data %>%
   filter(
-    track_genre %in% top_10_genres$track_genre
+    track_genre %in% top_10_genre_3_5$track_genre,
+    duration_group %in% c(
+      "Typical (3-4 min)",
+      "Moderately long (4-5 min)"
+    )
   ) %>%
   group_by(
     track_genre,
@@ -230,17 +260,40 @@ genre_duration_summary <- genre_duration_data %>%
   )
 
 
-genre_duration_summary
-
-
+genre_duration_3_5
 
 #-----------------------------------------------------
-# STEP 5
-# Heatmap: Genre + Duration + Popularity
+# STEP 6
+# Visualise Genre and Duration Comparison
 #-----------------------------------------------------
 
 ggplot(
-  genre_duration_summary,
+  genre_duration_3_5,
+  aes(
+    x = reorder(track_genre, median_popularity),
+    y = median_popularity,
+    fill = duration_group
+  )
+) +
+  geom_col(
+    position = "dodge"
+  ) +
+  coord_flip() +
+  labs(
+    title = "Popularity of Top Genres by Track Duration",
+    x = "Track Genre",
+    y = "Median Popularity",
+    fill = "Duration"
+  ) +
+  theme_minimal()
+
+#-----------------------------------------------------
+# STEP 7
+# Heatmap: Genre and Duration Relationship
+#-----------------------------------------------------
+
+ggplot(
+  genre_duration_3_5,
   aes(
     x = duration_group,
     y = reorder(track_genre, median_popularity),
@@ -250,7 +303,6 @@ ggplot(
   geom_tile() +
   labs(
     title = "Median Popularity by Genre and Track Duration",
-    subtitle = "Analysis limited to 3-5 minute tracks",
     x = "Track Duration Range",
     y = "Track Genre",
     fill = "Median Popularity"
@@ -263,22 +315,14 @@ ggplot(
     )
   )
 
-
-
-
-
-
-
 #=====================================================
 # ANALYSIS 2-3
 # Profile of High-Popularity Tracks
 #=====================================================
 
-
 #-----------------------------------------------------
 # STEP 1
-# Define High Popularity Tracks
-# Using Top 25% of Popularity
+# Identify Top 25% Most Popular Tracks
 #-----------------------------------------------------
 
 popularity_cutoff <- quantile(
@@ -287,12 +331,9 @@ popularity_cutoff <- quantile(
   na.rm = TRUE
 )
 
-
 popularity_cutoff
 
-
-
-# Select high popularity tracks
+# Select high-popularity tracks
 
 high_popularity_tracks <- exploration_data %>%
   filter(
@@ -300,14 +341,13 @@ high_popularity_tracks <- exploration_data %>%
   )
 
 
+# Check number of high-popularity tracks
+
 nrow(high_popularity_tracks)
-
-
 
 #-----------------------------------------------------
 # STEP 2
-# Create Combined Profiles
-# Genre + Duration + Explicit Status
+# Combine Genre, Duration and Explicit Status
 #-----------------------------------------------------
 
 profile_popularity <- exploration_data %>%
@@ -331,20 +371,18 @@ profile_popularity <- exploration_data %>%
     .groups = "drop"
   ) %>%
   arrange(
-    desc(high_popularity_rate)
+    desc(high_popularity_tracks)
   )
 
 
 profile_popularity
 
-
-
 #-----------------------------------------------------
 # STEP 3
-# Select Leading Profiles
+# Select Top 10 High-Popularity Profiles
 #-----------------------------------------------------
 
-top_profiles <- profile_popularity %>%
+top_high_popularity_profiles <- profile_popularity %>%
   slice_head(n = 10) %>%
   mutate(
     profile = paste(
@@ -360,19 +398,57 @@ top_profiles <- profile_popularity %>%
   )
 
 
-top_profiles
-
-
+top_high_popularity_profiles
 
 #-----------------------------------------------------
 # STEP 4
-# Visualise High Popularity Profiles
+# Visualise High-Popularity Profiles
 #-----------------------------------------------------
 
 ggplot(
-  top_profiles,
+  top_high_popularity_profiles,
   aes(
-    x = reorder(profile, high_popularity_rate),
+    x = reorder(
+      profile,
+      high_popularity_tracks
+    ),
+    y = high_popularity_tracks
+  )
+) +
+  geom_col() +
+  coord_flip() +
+  labs(
+    title = "Most Common Profiles Among High-Popularity Tracks",
+    x = "Genre, Duration and Explicit Status",
+    y = "Number of High-Popularity Tracks"
+  ) +
+  theme_minimal()
+
+#-----------------------------------------------------
+# STEP 5
+# Rank Profiles by High-Popularity Rate
+#-----------------------------------------------------
+
+top_profile_rates <- top_high_popularity_profiles %>%
+  arrange(
+    desc(high_popularity_rate)
+  )
+
+
+top_profile_rates
+
+#-----------------------------------------------------
+# STEP 6
+# Visualise High-Popularity Rate
+#-----------------------------------------------------
+
+ggplot(
+  top_profile_rates,
+  aes(
+    x = reorder(
+      profile,
+      high_popularity_rate
+    ),
     y = high_popularity_rate
   )
 ) +
