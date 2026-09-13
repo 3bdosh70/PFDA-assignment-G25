@@ -3,13 +3,6 @@ library(ggplot2)
 
 
 #=====================================================
-# OBJECTIVE 2
-# Track Duration, Explicit Status, Genre and Popularity
-#=====================================================
-
-
-
-#=====================================================
 # ANALYSIS 2-1
 # Track Duration, Explicit Status and Popularity
 #=====================================================
