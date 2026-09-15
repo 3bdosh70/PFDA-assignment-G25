@@ -11,6 +11,12 @@ library(ggplot2)
 # Track Duration, Explicit Status and Popularity
 #=====================================================
 
+# Convert duration from milliseconds to minutes
+exploration_data$duration_min <- 
+  as.numeric(exploration_data$duration_ms) / 60000
+
+
+
 #-----------------------------------------------------
 # STEP 1
 # Create Duration Groups
