@@ -437,4 +437,29 @@ cat("\nRaw complete-case sensitivity rows:", nrow(raw_complete), "\n")
 print(robustness_comparison)
 write.csv(robustness_comparison,
           file.path(table_dir, "robustness_comparison.csv"), row.names = FALSE)
+# EXTRA FEATURE PLOT: compare original-data and cleaned-data model errors.
+# Run after both model_comparison and robustness_comparison exist.
+extra_plot_data = bind_rows(
+  mutate(model_comparison, Dataset = "Cleaned data"),
+  mutate(robustness_comparison, Dataset = "Original valid data")
+) %>%
+  mutate(Model = factor(Model, levels = c(
+    "Interaction regression", "Main-effects regression", "Training-mean baseline"
+  )))
+
+extra_figure = ggplot(extra_plot_data,
+                      aes(x = MAE, y = Model, color = Dataset)) +
+  geom_point(position = position_dodge(width = 0.4), size = 3) +
+  geom_text(aes(label = sprintf("%.3f", MAE)),
+            position = position_dodge(width = 0.4),
+            hjust = -0.25, size = 3, show.legend = FALSE) +
+  scale_x_continuous(expand = expansion(mult = c(0.06, 0.3))) +
+  labs(title = "Extra feature: Raw-data robustness check",
+       subtitle = "Similar prediction errors on two versions of the data",
+       x = "Test MAE (lower is better)", y = NULL, color = "Dataset") +
+  theme_minimal(base_size = 12)
+print(extra_figure)
+ggsave(file.path(figure_dir, "objective4_extra_feature_robustness.png"),
+       extra_figure, width = 9, height = 4.6, dpi = 220)
+
 cat("\nOBJECTIVE 4 FINISHED: Rerun from repository root if inputs change.\n")
