@@ -1,32 +1,45 @@
 # Spotify song popularity analysis in R
 
-A team project exploring which audio and track characteristics relate to Spotify popularity. The published dataset has **113,305 rows**, **89,553 unique track IDs**, and **114 genres**. Repeated track IDs mean rows are not all independent songs.
+**What does this track dataset reveal about popularity?** Our team audited and prepared Spotify track data, explored audio features and categories, and wrote prediction code in R. This page leads with two descriptive views you can check against the published tables.
 
-## At a glance
+| Dataset rows | Unique track IDs | Genres |
+| ---: | ---: | ---: |
+| **113,305** | **89,553** | **114** |
 
-The team audited and cleaned the data, explored audio features and categories, and implemented prediction code in R. The published tables linked below support descriptive findings; this overview does not claim a verified prediction score. The chart shows one **descriptive** comparison, not evidence that explicit content causes a change in popularity.
+Some track IDs occur in more than one genre, so rows are not all independent songs.
 
-![Horizontal bar chart: mean popularity is 33.0 for non-explicit rows and 36.5 for explicit rows](figures/popularity-by-explicit.svg)
+## Two questions from the data
 
-*Mean popularity by explicit flag in the published dataset: 33.0 across 103,630 non-explicit rows and 36.5 across 9,675 explicit rows. Source: [published summary table](outputs/tables/popularity_by_explicit.csv).*
+### Does the explicit flag separate average popularity?
+
+![Bar chart showing mean popularity of 33.0 for non-explicit rows and 36.5 for explicit rows](figures/popularity-by-explicit.svg)
+
+Mean popularity is **33.0** across 103,630 non-explicit rows and **36.5** across 9,675 explicit rows in the [published summary](outputs/tables/popularity_by_explicit.csv). This is a group comparison, not evidence that the explicit flag causes the difference.
+
+### Which numeric features have the strongest linear relationship?
+
+![Diverging chart of six weak correlations with popularity, led by instrumentalness at minus 0.094 and loudness at plus 0.047](figures/popularity-correlations.svg)
+
+The largest absolute correlation in the [published correlation table](outputs/tables/popularity_correlations.csv) is only about **0.09**. These are weak linear relationships in this dataset; the chart does not measure model accuracy or causality.
+
+## Follow the work
 
 ```mermaid
 flowchart LR
-    Data[Spotify track rows] --> Audit[Audit and clean]
-    Audit --> Explore[Explore audio features and categories]
-    Explore --> Model[Build prediction models]
-    Model --> Review[Compare outputs and limitations]
+    Raw[Track rows] --> Audit[Audit]
+    Audit --> Prepare[Prepare]
+    Prepare --> Explore[Explore]
+    Explore --> Predict[Prediction code]
+    Explore --> Tables[Published tables]
 ```
 
-## Find the work
-
-| Start here | What it contains |
+| Start here | What you will find |
 | --- | --- |
-| [Group25.R](Group25.R) | The combined workflow for the published version. |
-| [Data audit](scripts/01_import_and_audit.R) and [preparation](scripts/02_data_preparation.R) | The first steps in the analysis. |
-| [Exploration](scripts/03_general_exploration.R) and [prediction code](scripts/07_objective4_prediction.R) | Separate stages to read after the audit. |
-| [outputs/tables/](outputs/tables) | Published descriptive summaries. |
-| [data/raw/](data/raw) | Dataset and its description. |
+| [Combined workflow](Group25.R) | The published version's full R analysis in one file. |
+| [Audit](scripts/01_import_and_audit.R) and [preparation](scripts/02_data_preparation.R) | Data checks and cleaning steps. |
+| [Exploration](scripts/03_general_exploration.R) | Descriptive analyses behind the charts and tables. |
+| [Prediction code](scripts/07_objective4_prediction.R) | Implemented modelling stage; this README does not claim a verified prediction score. |
+| [Published tables](outputs/tables) and [raw data](data/raw) | Numbers and input files for checking the overview. |
 
 ## Run the published workflow
 
@@ -36,8 +49,6 @@ From the repository root, use R with `dplyr`, `ggplot2`, and `rpart` installed:
 Rscript --vanilla Group25.R
 ```
 
-The combined script expects `data/raw/spotify_tracks_data.csv` in this repository. It runs the full analysis and writes generated outputs locally, so use the linked scripts and published tables for a quicker review. `scripts/Main.R` covers the audit, preparation, and general exploration stages rather than the complete combined analysis.
+The script expects `data/raw/spotify_tracks_data.csv` in this repository and writes generated outputs locally. For a quicker review, open the linked scripts and published tables. `scripts/Main.R` covers audit, preparation, and general exploration rather than the entire combined analysis.
 
-## Reading the results responsibly
-
-The chart above is a dataset summary, not a causal result or a verified prediction score. Some track IDs appear in more than one genre. This is shared team work; the repository history and files provide the detail behind the overview, and this README does not assign individual credit for each stage.
+**Interpretation and credit:** Both figures describe associations in the published dataset. Neither establishes a cause or a verified prediction score. This was shared team work; the repository history and files carry the detailed record, and this overview does not assign individual credit by stage.
