@@ -1,13 +1,10 @@
 # ============================================================
-# PROGRAMMING FOR DATA ANALYSIS
+# SPOTIFY SONG POPULARITY ANALYSIS
 # GROUP 25
 # SONG POPULARITY PREDICTION
 # ============================================================
 
 # Script: 09_final_validation.R
-# Responsible student:
-# Name:
-# TP Number:
 
 # Purpose:
 # To perform final checks on the complete project, confirm that

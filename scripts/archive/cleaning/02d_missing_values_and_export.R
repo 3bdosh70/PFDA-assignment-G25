@@ -1,13 +1,10 @@
 # ============================================================
-# PROGRAMMING FOR DATA ANALYSIS
+# SPOTIFY SONG POPULARITY ANALYSIS
 # GROUP 25
 # SONG POPULARITY PREDICTION
 # ============================================================
 
 # Script: 02d_missing_values_and_export.R
-# Responsible student:
-# Name:
-# TP Number:
 
 # Purpose:
 # To handle the remaining missing values after data validation
@@ -50,7 +47,7 @@ popularity_rows_removed
 nrow(clean_data)
 #113311 rows remain
 
-#Popularity is the main target variable for the assignment
+#Popularity is the main target variable for the project
 #Missing popularity values are not imputed because this would
 #create artificial target values for the later analysis and prediction
 

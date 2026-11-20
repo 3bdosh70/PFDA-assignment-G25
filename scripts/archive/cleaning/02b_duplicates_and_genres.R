@@ -1,13 +1,10 @@
 # ============================================================
-# PROGRAMMING FOR DATA ANALYSIS
+# SPOTIFY SONG POPULARITY ANALYSIS
 # GROUP 25
 # SONG POPULARITY PREDICTION
 # ============================================================
 
 # Script: 02b_duplicates_and_genres.R
-# Responsible student:
-# Name:
-# TP Number:
 
 # Purpose:
 # To remove exact duplicate records and standardize
