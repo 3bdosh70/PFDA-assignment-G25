@@ -46,15 +46,12 @@ if (!all(dir.exists(file.path(output_dir, c("tables", "plots"))))) {
 }
 
 # ============================================================
-# PROGRAMMING FOR DATA ANALYSIS
+# SPOTIFY SONG POPULARITY ANALYSIS
 # GROUP 25
 # SONG POPULARITY PREDICTION
 # ============================================================
 
 # Script: 01_import_and_audit.R
-# Responsible student:
-# Name:
-# TP Number:
 
 # Purpose:
 # To import and inspect the original Spotify dataset without
@@ -1320,7 +1317,7 @@ popularity_rows_removed
 nrow(clean_data)
 #113311 rows remain
 
-#Popularity is the main target variable for the assignment
+#Popularity is the main target variable for the project
 #Missing popularity values are not imputed because this would
 #create artificial target values for the later analysis and prediction
 

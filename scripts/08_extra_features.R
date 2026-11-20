@@ -1,11 +1,10 @@
 # ============================================================
-# PROGRAMMING FOR DATA ANALYSIS
+# SPOTIFY SONG POPULARITY ANALYSIS
 # GROUP 25
 # SONG POPULARITY PREDICTION
 # ============================================================
 
 # Script: 08_extra_features.R
-# Responsible students:
 # Names:
 # TP Numbers:
 

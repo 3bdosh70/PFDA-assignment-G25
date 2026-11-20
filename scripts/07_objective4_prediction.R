@@ -1,6 +1,5 @@
 # ================================================================
 # GROUP 25 | OBJECTIVE 4: MUSICAL HARMONY, METER AND PREDICTION
-# Student: Abdulrahman Hussein Ali Mashrah (TP086182)
 # ================================================================
 # Research objective:
 # Evaluate how musical key, mode and time signature relate to

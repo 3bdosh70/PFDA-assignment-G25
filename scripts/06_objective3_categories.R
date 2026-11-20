@@ -1,6 +1,5 @@
 # ============================================================
 # OBJECTIVE 3
-# Abdulaziz Qaderi TP091283
 # ============================================================
 
 # To investigate how danceability, acousticness,

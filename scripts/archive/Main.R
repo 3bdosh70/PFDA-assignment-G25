@@ -1,13 +1,10 @@
 # ============================================================
-# PROGRAMMING FOR DATA ANALYSIS
+# SPOTIFY SONG POPULARITY ANALYSIS
 # GROUP 25
 # SONG POPULARITY PREDICTION
 # ============================================================
 
 # Script: MAIN.R
-# Responsible students:
-# Name:
-# TP Number:
 
 # Purpose:
 # To run the complete current workflow in one file:

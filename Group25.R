@@ -1,9 +1,5 @@
 # ================================================================
-# GROUP 25 | PROGRAMMING FOR DATA ANALYSIS | ONE-FILE SUBMISSION
-# Waleed Siddig Mohamed Siddig, TP078784
-# Abdalla Hassan Basher Abdelrahman, TP089555
-# Abdulaziz Qaderi, TP091283
-# Abdulrahman Hussein Ali Mashrah, TP086182
+# SPOTIFY SONG POPULARITY | TEAM ANALYSIS
 # ================================================================
 # ORDER: Main audit, preparation and exploration; Objectives 1-4.
 # Run from the GROUP PROJECT ROOT, where data/raw/spotify_tracks_data.csv exists:
@@ -12,7 +8,6 @@
 #   Rscript --vanilla Group25.R
 # Packages: dplyr, ggplot2, rpart (rpart is used by Objective 2).
 # All analyses below are from the uploaded original source files.
-# Repairs for integration are documented in Group25_INTEGRATION_README.txt.
 # ================================================================
 
 
@@ -68,15 +63,12 @@ if (!all(dir.exists(file.path(output_dir, c("tables", "plots"))))) {
 }
 
 # ============================================================
-# PROGRAMMING FOR DATA ANALYSIS
+# SPOTIFY SONG POPULARITY ANALYSIS
 # GROUP 25
 # SONG POPULARITY PREDICTION
 # ============================================================
 
 # Script: 01_import_and_audit.R
-# Responsible student:
-# Name:
-# TP Number:
 
 # Purpose:
 # To import and inspect the original Spotify dataset without
@@ -1342,7 +1334,7 @@ popularity_rows_removed
 nrow(clean_data)
 #113311 rows remain
 
-#Popularity is the main target variable for the assignment
+#Popularity is the main target variable for the project
 #Missing popularity values are not imputed because this would
 #create artificial target values for the later analysis and prediction
 
@@ -2682,7 +2674,7 @@ if (!interactive()) {
 }
 
 # ======================================================================
-# PART 2 | WALEED SIDDIG MOHAMED SIDDIG, TP078784 | OBJECTIVE 1
+# PART 2 | OBJECTIVE 1
 # ======================================================================
 local({
 # SCREENSHOT COPY: same calculations as your final script.
@@ -2691,15 +2683,12 @@ local({
 # For graphs: Plots > Zoom, then screenshot. No extra packages needed.
 
 # ============================================================
-# PROGRAMMING FOR DATA ANALYSIS
+# SPOTIFY SONG POPULARITY ANALYSIS
 # GROUP 25
 # SONG POPULARITY PREDICTION
 # ============================================================
 
 # Script: 04_objective1_audio_updated.R
-# Responsible student:
-# Name: Waleed Siddig Mohamed Siddig
-# TP Number: TP078784
 
 # Objective 1:
 # To examine how Energy, Loudness, Valence and Tempo relate to
@@ -3277,7 +3266,7 @@ stopifnot(nrow(objective1_data) > 0, nrow(regression_results) == 2,
 cat("\n[OBJ1] completed and checks passed.\n")
 
 # ======================================================================
-# PART 3 | ABDALLA HASSAN BASHER ABDELRAHMAN, TP089555 | OBJECTIVE 2
+# PART 3 | OBJECTIVE 2
 # ======================================================================
 local({
 # ============================================================
@@ -3286,7 +3275,6 @@ local({
 # Descriptive -> Predictive -> Exploratory Prescriptive Analysis
 # ============================================================
 
-#ABDALLA HASSAN BASHER ABDELRAHMAN TP089555
 
 library(dplyr)
 library(ggplot2)
@@ -4291,19 +4279,16 @@ stopifnot(nrow(objective2_data) > 0, nrow(test) > 0,
 cat("\n[OBJ2] completed and checks passed.\n")
 
 # ======================================================================
-# PART 4 | ABDULAZIZ QADERI, TP091283 | OBJECTIVE 3
+# PART 4 | OBJECTIVE 3
 # ======================================================================
 local({
 # ============================================================
-# PROGRAMMING FOR DATA ANALYSIS
+# SPOTIFY SONG POPULARITY ANALYSIS
 # GROUP 25
 # SONG POPULARITY PREDICTION
 # ============================================================
 
 # Script: 06_objective3_categories.R
-# Responsible student:
-# Name:Abdulaziz Qaderi
-# TP Number:TP091283
 #2026-10-02
 
 # Objective 3:
@@ -4705,12 +4690,11 @@ cat("\n[OBJ3] completed and checks passed.\n")
 
 
 # ======================================================================
-# PART 5 | ABDULRAHMAN HUSSEIN ALI MASHRAH, TP086182 | OBJECTIVE 4
+# PART 5 | OBJECTIVE 4
 # ======================================================================
 local({
 # ================================================================
 # GROUP 25 | OBJECTIVE 4: MUSICAL HARMONY, METER AND PREDICTION
-# Student: Abdulrahman Hussein Ali Mashrah (TP086182)
 # ================================================================
 # Research objective:
 # Evaluate how musical key, mode and time signature relate to

@@ -1,13 +1,10 @@
 # ============================================================
-# PROGRAMMING FOR DATA ANALYSIS
+# SPOTIFY SONG POPULARITY ANALYSIS
 # GROUP 25
 # SONG POPULARITY PREDICTION
 # ============================================================
 
 # Script: 04_objective1_audio.R
-# Responsible student:
-# Name:
-# TP Number:
 
 # Objective 1:
 # To investigate whether audio intensity and acoustic

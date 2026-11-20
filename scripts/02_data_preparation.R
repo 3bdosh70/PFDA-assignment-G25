@@ -1,13 +1,10 @@
 # ============================================================
-# PROGRAMMING FOR DATA ANALYSIS
+# SPOTIFY SONG POPULARITY ANALYSIS
 # GROUP 25
 # SONG POPULARITY PREDICTION
 # ============================================================
 
 # Script: 02_data_preparation.R
-# Responsible students:
-# Name:
-# TP Number:
 
 # Purpose:
 # To import, inspect, clean, validate and transform the
