@@ -4,7 +4,7 @@ A team project exploring which audio and track characteristics relate to Spotify
 
 ## At a glance
 
-The team audited and cleaned the data, explored audio features and categories, and built prediction workflows in R. This chart shows one **descriptive** comparison from the published output tables. It does not show that explicit content causes a change in popularity.
+The team audited and cleaned the data, explored audio features and categories, and implemented prediction code in R. The published tables linked below support descriptive findings; this overview does not claim a verified prediction score. The chart shows one **descriptive** comparison, not evidence that explicit content causes a change in popularity.
 
 ![Horizontal bar chart: mean popularity is 33.0 for non-explicit rows and 36.5 for explicit rows](figures/popularity-by-explicit.svg)
 
@@ -23,7 +23,8 @@ flowchart LR
 | Start here | What it contains |
 | --- | --- |
 | [Group25.R](Group25.R) | The combined workflow for the published version. |
-| [scripts/](scripts) | Separate analysis stages and supporting code. |
+| [Data audit](scripts/01_import_and_audit.R) and [preparation](scripts/02_data_preparation.R) | The first steps in the analysis. |
+| [Exploration](scripts/03_general_exploration.R) and [prediction code](scripts/07_objective4_prediction.R) | Separate stages to read after the audit. |
 | [outputs/tables/](outputs/tables) | Published descriptive summaries. |
 | [data/raw/](data/raw) | Dataset and its description. |
 
@@ -35,8 +36,8 @@ From the repository root, use R with `dplyr`, `ggplot2`, and `rpart` installed:
 Rscript --vanilla Group25.R
 ```
 
-The combined script expects `data/raw/spotify_tracks_data.csv` in this repository. It writes generated outputs locally. The separate scripts are useful for reading the stages; `scripts/Main.R` covers the audit, preparation, and general exploration stages rather than the complete combined analysis.
+The combined script expects `data/raw/spotify_tracks_data.csv` in this repository. It runs the full analysis and writes generated outputs locally, so use the linked scripts and published tables for a quicker review. `scripts/Main.R` covers the audit, preparation, and general exploration stages rather than the complete combined analysis.
 
 ## Reading the results responsibly
 
-The chart above is a dataset summary, not a causal result or a verified prediction score. Some track IDs appear in more than one genre. This README describes the **currently published code and tables**; newer local work has not yet been merged into this group repository. The project belongs to the team, and individual contributions should not be inferred from this overview.
+The chart above is a dataset summary, not a causal result or a verified prediction score. Some track IDs appear in more than one genre. This is shared team work; the repository history and files provide the detail behind the overview, and this README does not assign individual credit for each stage.
