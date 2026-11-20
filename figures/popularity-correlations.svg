@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="388" viewBox="0 0 900 388" role="img" aria-labelledby="title desc">
+  <title id="title">Correlations between audio features and popularity</title>
+  <desc id="desc">Six small linear correlations from the published summary table. Instrumentalness minus 0.094, loudness plus 0.047, speechiness minus 0.045, valence minus 0.041, danceability plus 0.034, and acousticness minus 0.023.</desc>
+  <rect width="900" height="388" rx="16" fill="#f8fafc"/>
+  <text x="32" y="44" fill="#172b43" font-family="Arial, sans-serif" font-size="24" font-weight="700">Audio features and popularity</text>
+  <text x="32" y="69" fill="#5c6d7e" font-family="Arial, sans-serif" font-size="14">Pearson correlations from the published table · all shown relationships are weak</text>
+  <text x="32" y="113" fill="#5c6d7e" font-family="Arial, sans-serif" font-size="13" font-weight="700">FEATURE</text>
+  <text x="368" y="113" fill="#5c6d7e" font-family="Arial, sans-serif" font-size="13" font-weight="700">NEGATIVE</text>
+  <text x="619" y="113" fill="#5c6d7e" font-family="Arial, sans-serif" font-size="13" font-weight="700">POSITIVE</text>
+  <line x1="550" y1="125" x2="550" y2="339" stroke="#8596a7" stroke-width="2"/>
+  <line x1="370" y1="339" x2="730" y2="339" stroke="#a9b7c4"/>
+  <text x="370" y="360" text-anchor="middle" fill="#5c6d7e" font-family="Arial, sans-serif" font-size="13">−0.10</text>
+  <text x="550" y="360" text-anchor="middle" fill="#5c6d7e" font-family="Arial, sans-serif" font-size="13">0</text>
+  <text x="730" y="360" text-anchor="middle" fill="#5c6d7e" font-family="Arial, sans-serif" font-size="13">+0.10</text>
+  <text x="32" y="151" fill="#172b43" font-family="Arial, sans-serif" font-size="16">Instrumentalness</text>
+  <rect x="380" y="133" width="170" height="24" rx="5" fill="#446a91"/>
+  <text x="370" y="151" text-anchor="end" fill="#2b4d70" font-family="Arial, sans-serif" font-size="15" font-weight="700">−0.094</text>
+  <text x="32" y="187" fill="#172b43" font-family="Arial, sans-serif" font-size="16">Loudness</text>
+  <rect x="550" y="169" width="85" height="24" rx="5" fill="#1d9d76"/>
+  <text x="645" y="187" fill="#16795e" font-family="Arial, sans-serif" font-size="15" font-weight="700">+0.047</text>
+  <text x="32" y="223" fill="#172b43" font-family="Arial, sans-serif" font-size="16">Speechiness</text>
+  <rect x="469" y="205" width="81" height="24" rx="5" fill="#446a91"/>
+  <text x="459" y="223" text-anchor="end" fill="#2b4d70" font-family="Arial, sans-serif" font-size="15" font-weight="700">−0.045</text>
+  <text x="32" y="259" fill="#172b43" font-family="Arial, sans-serif" font-size="16">Valence</text>
+  <rect x="476" y="241" width="74" height="24" rx="5" fill="#446a91"/>
+  <text x="466" y="259" text-anchor="end" fill="#2b4d70" font-family="Arial, sans-serif" font-size="15" font-weight="700">−0.041</text>
+  <text x="32" y="295" fill="#172b43" font-family="Arial, sans-serif" font-size="16">Danceability</text>
+  <rect x="550" y="277" width="62" height="24" rx="5" fill="#1d9d76"/>
+  <text x="622" y="295" fill="#16795e" font-family="Arial, sans-serif" font-size="15" font-weight="700">+0.034</text>
+  <text x="32" y="331" fill="#172b43" font-family="Arial, sans-serif" font-size="16">Acousticness</text>
+  <rect x="509" y="313" width="41" height="24" rx="5" fill="#446a91"/>
+  <text x="499" y="331" text-anchor="end" fill="#2b4d70" font-family="Arial, sans-serif" font-size="15" font-weight="700">−0.023</text>
+</svg>
