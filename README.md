@@ -46,6 +46,18 @@ Among the variables in the [published correlation table](outputs/tables/populari
 
 The chart shows five labels from each end of the **114 genre medians**. The selected labels each have roughly 900–1,000 cleaned rows; for example, the median is **0** for several low-end labels and **66** for `pop` rows. This is a comparison *within this dataset*, not a universal ranking of musical genres. Genre labels overlap for some tracks, and the input gives each label roughly similar row counts. The [chart script](figures/build_readme_charts.py) makes the selection and calculation reproducible.
 
+### 5. Does the relationship with danceability depend on acousticness?
+
+The two panels use the same 25 groups. Find a square on the left to read the median popularity score, then look at the same position on the right to see how many rows support it. Each axis uses the five equal-width feature ranges defined in the team's R analysis. Boundary values enter the higher band, and the last band includes 1.0.
+
+![Paired heatmaps of median popularity and row counts across five danceability and acousticness bands](figures/walkthrough.png)
+
+Among rows with acousticness below 0.2, the median rises from 22 in the lowest danceability band to 36 in the middle band, then falls back to 22 in the highest. For acousticness of 0.4 to below 0.6, the corresponding medians are 30.5, 39 and 42 (the plot rounds cell labels). A single correlation compresses those different shapes into one number. The count panel also shows how uneven the evidence is. That middle band's median of 39 uses 4,193 rows, while the median of 42 uses 830. These are comparisons within the cleaned collection, where tracks may contribute multiple rows. [Original R grouping](scripts/06_objective3_categories.R) · [Rebuild this figure with Python](figures/plot_walkthrough.py)
+
+## How prediction is evaluated
+
+The musical-structure analysis groups the split by track ID so that different genre entries for a song stay together. It predicts a score for each held-out row three ways. The baseline always predicts the training mean. The first regression estimates separate effects for key, mode and time signature. The second also allows their effects to vary together. Comparing all three on the same held-out rows tests whether musical structure adds information beyond the average. Mean absolute error expresses a typical miss in popularity points, while root mean squared error gives larger misses more weight. [Evaluation code](scripts/07_objective4_prediction.R)
+
 ## How the analysis is organized
 
 | Stage | What to read | Question it addresses |
